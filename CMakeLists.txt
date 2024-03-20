@@ -3,6 +3,7 @@ project(Bedrock)
 
 set(CMAKE_CXX_STANDARD 17)
 
+# Improt ENet (I dunno why the community branch is "unofficial" in vcpkg
 find_package(unofficial-enet CONFIG REQUIRED)
 
 add_library(Bedrock STATIC library.cpp)
