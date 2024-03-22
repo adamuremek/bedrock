@@ -1,57 +1,56 @@
 #include <iostream>
 #include <enet/enet.h>
-#include <vector>
-#include <cstdio>
+#include <bedrock/bedrock.h>
 
-struct Message{
-    uint8_t* p_data = nullptr;
-    size_t p_size = 0;
-    void release(){
-        delete p_data;
-        p_data = nullptr;
-        p_size = 0;
-    }
-};
-
-class Serializer{
-
-};
-
-class Deserializer{
-
-};
 
 template<typename T>
-Message createMessage(const T* data, size_t size){
-    const uint8_t* byteData = reinterpret_cast<const uint8_t*>(data);
+void createMessage(T obj){
 
+}
+
+
+Message serializeInt(void* in){
+    int* data = static_cast<int*>(in);
     Message mssg;
-    mssg.p_data = new uint8_t[size];
-    mssg.p_size = size;
 
-    std::memcpy(mssg.p_data, byteData, size);
+    mssg.p_data = new Byte[sizeof(int)];
+    mssg.p_size = sizeof(int);
+
+    std::memcpy(mssg.p_data, data, mssg.p_size);
 
     return mssg;
 }
 
-#define SERIALIZE template<> void serialize
+void deserializeInt(Message in, void* out){
+    int* data = static_cast<int*>(out);
 
-template<typename T>
-void serialize(T in){
-    std::cout << "IS GENERIC" << std::endl;
+    std::memcpy(data, in.p_data, in.p_size);
 }
 
-SERIALIZE<int>(int in){
-    std::cout << "IS INT" << std::endl;
+Message serializeFloat(void* in){
+    float* data = static_cast<float*>(in);
+    Message mssg;
+
+    mssg.p_data = new Byte[sizeof(float)];
+    mssg.p_size = sizeof(float);
+
+    std::memcpy(mssg.p_data, data, mssg.p_size);
+
+    return mssg;
 }
 
 int main(){
     int a = 5;
-    float b = 2.0f;
+    float b = 4.123124176f;
 
-    serialize(a);
-    serialize(b);
+    REGISTER_SERIALIZER(int, serializeInt);
+    REGISTER_SERIALIZER(float, serializeFloat);
+    REGISTER_DESERIALIZER(int, deserializeInt);
 
+    Message m = SERIALIZE(&a);
+    int a2 = DESERIALIZE<int>(m);
+
+    std::cout << a2 << std::endl;
 }
 
 
