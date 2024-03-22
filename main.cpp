@@ -22,13 +22,6 @@ class Deserializer{
 };
 
 template<typename T>
-void serialize(T in){
-    std::cout << "IS GENERIC" << std::endl;
-}
-
-#define SERIALIZE template<> void serialize
-
-template<typename T>
 Message createMessage(const T* data, size_t size){
     const uint8_t* byteData = reinterpret_cast<const uint8_t*>(data);
 
@@ -41,14 +34,16 @@ Message createMessage(const T* data, size_t size){
     return mssg;
 }
 
-//SERIALIZE<int>(int in){
-//    std::cout << "IS INT" << std::endl;
-//}
-//
-SERIALIZE<float>(float in){
-    std::cout << "IS FLOAT" << std::endl;
+#define SERIALIZE template<> void serialize
+
+template<typename T>
+void serialize(T in){
+    std::cout << "IS GENERIC" << std::endl;
 }
 
+SERIALIZE<int>(int in){
+    std::cout << "IS INT" << std::endl;
+}
 
 int main(){
     int a = 5;
@@ -58,6 +53,7 @@ int main(){
     serialize(b);
 
 }
+
 
 
 
