@@ -2,16 +2,15 @@ cmake_minimum_required(VERSION 3.27)
 project(Bedrock)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
 # Import ENet (I dunno why the community branch is "unofficial" in vcpkg
 find_package(unofficial-enet CONFIG REQUIRED)
 
 file(GLOB BEDROCK_SRC "src/*.cpp")
 
-add_library(Bedrock STATIC ${BEDROCK_SRC}
-        tests/test1.cpp)
+add_library(Bedrock STATIC ${BEDROCK_SRC})
 target_include_directories(Bedrock PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_link_libraries(Bedrock PRIVATE unofficial::enet::enet)
 
 
 add_executable(BedrockDebug main.cpp)

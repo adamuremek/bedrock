@@ -20,4 +20,7 @@ struct Message{
 using SerializeFunc = std::function<Message(void*)>;
 using DeserializeFunc = std::function<void(Message, void*)>;
 
+
+
+
 #endif //BEDROCK_TYPES_H
