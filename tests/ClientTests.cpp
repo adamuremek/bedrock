@@ -69,6 +69,7 @@ TEST_F(Client, AbruptClientDisconnect){
 }
 
 TEST_F(Client, SendMessageToHost){
+    wait(4000);
     clientRendezvous();
 
     // Wait for server to start up

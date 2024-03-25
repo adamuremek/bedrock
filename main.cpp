@@ -6,25 +6,6 @@
 #include <any>
 
 
-
-
-
-
-template<typename T>
-ByteStream serializeType(T& obj){
-    if(!std::is_base_of<BedrockDataType<T>, T>::value){
-        return nullptr;
-    }
-
-    auto& objRef = static_cast<BedrockDataType<T>&>(obj);
-    auto out = new Byte[sizeof(uint32_t) + sizeof(T)];
-    std::memcpy(out, &T::dataId, sizeof(uint32_t));
-    std::memcpy(out + sizeof(uint32_t), &obj, sizeof(T));
-
-    return out;
-}
-
-
 BEDROCK_DATA_TYPE(Test1){
     short a;
     int b;

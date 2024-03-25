@@ -70,13 +70,15 @@ TEST_F(Server, AbruptClientDisconnect){
 }
 
 TEST_F(Server, SendMessageToHost){
+    wait(4000);
     serverRendezvous();
 
     Bedrock::init();
     Bedrock::startDedicatedHost();
-
+    std::cout <<"CUNT" << std::endl;
     // Server has started. Tell client to proceed
     serverSendSignal();
+    std::cout <<"Idioe" << std::endl;
 
     // Wait for client to finish their tests before proceeding
     serverWaitForSignal();
