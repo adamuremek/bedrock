@@ -4,6 +4,7 @@
 #include "types.h"
 #include "serialization.h"
 #include "event.h"
+#include "messaging.h"
 #include <enet/enet.h>
 #include <thread>
 
