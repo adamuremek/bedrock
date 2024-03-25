@@ -154,6 +154,7 @@ void waitForSignal(const char* signalId){
     if (sem_wait(signal) == -1) {
         DEBUG_ERR("sem_wait failed");
     } else {
+
         DEBUG_PRINT("Signal received! Continuing execution.");
     }
 
