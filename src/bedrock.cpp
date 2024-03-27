@@ -1,6 +1,7 @@
 #include "bedrock/bedrock.h"
 #include <iostream>
 
+
 void Bedrock::pollClientEvents() {
     ENetEvent event;
 
@@ -141,3 +142,4 @@ void Bedrock::clearEventCallbacks() {
 //
 //    //enet_host_flush(host);
 //}
+

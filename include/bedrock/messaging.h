@@ -5,7 +5,7 @@ class MessageCallbackRegistry{
 private:
     std::unordered_map<uint32_t,  std::function<void(ByteStream)>> callbacks;
 public:
-    static MessageCallbackRegistry& getInstance(){
+    static MessageCallbackRegistry& singleton(){
         static MessageCallbackRegistry callbackRegistry;
         return callbackRegistry;
     }
