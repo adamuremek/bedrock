@@ -26,15 +26,24 @@ public:
         };
     }
 
-    void executeCallback(ByteStream stream){
+    void executeCallback(Message msg){
         uint32_t id = 0;
-        std::memcpy(&id, stream, sizeof(uint32_t));
+        std::memcpy(&id, msg.data, sizeof(uint32_t));
 
         if(callbacks.find(id) != callbacks.end()){
-            callbacks[id](stream);
+            callbacks[id](msg.data);
         }
     }
 };
+
+template<typename T>
+inline void registerCallback(void (*func)(T)){
+    MessageCallbackRegistry::singleton().registerCallback<T>(func);
+}
+
+inline void executeCallback(Message msg){
+    MessageCallbackRegistry::singleton().executeCallback(msg);
+}
 
 
 #endif //BEDROCK_MESSAGING_H

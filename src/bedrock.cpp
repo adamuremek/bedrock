@@ -51,7 +51,12 @@ void Bedrock::pollHostEvents() {
                 break;
             }
             case ENET_EVENT_TYPE_RECEIVE: {
-                std::cout << "Message received from Client" << std::endl;
+                Message msg{};
+                msg.data = event.packet->data;
+                msg.size = event.packet->dataLength;
+
+                executeCallback(msg);
+
                 enet_packet_destroy(event.packet);
                 break;
             }

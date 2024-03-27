@@ -9,12 +9,12 @@ using Byte = unsigned char;
 using StreamSize = unsigned long;
 
 struct Message{
-    ByteStream p_data = nullptr;
-    StreamSize p_size = 0;
+    ByteStream data = nullptr;
+    StreamSize size = 0;
     void release(){
-        delete p_data;
-        p_data = nullptr;
-        p_size = 0;
+        delete data;
+        data = nullptr;
+        size = 0;
     }
 };
 

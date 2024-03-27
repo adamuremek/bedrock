@@ -1,8 +1,8 @@
 #ifndef TESTS_SYNCHRONIZATION_H
 #define TESTS_SYNCHRONIZATION_H
 
-#define WIN_API
-#define SYNC_DEBUG
+#define POSIX
+//#define SYNC_DEBUG
 
 #ifdef WIN_API
 #include <windows.h>
@@ -143,7 +143,7 @@ void waitForSignal(const char* signalId){
 
 #elif defined(POSIX)
     // Opening an existing named semaphore
-    sem_t* signal = sem_open(signalId, 0);
+    sem_t* signal = sem_open(signalId, O_CREAT, S_IRUSR | S_IWUSR, 0);
     if (signal == SEM_FAILED) {
         DEBUG_ERR("sem_open failed for signal AHHH");
         return;
@@ -151,12 +151,14 @@ void waitForSignal(const char* signalId){
 
     DEBUG_PRINT("Waiting for signal...");
     // Waiting (decrementing) semaphore
-    if (sem_wait(signal) == -1) {
+    if (sem_wait(signal) < 0) {
         DEBUG_ERR("sem_wait failed");
-    } else {
-
-        DEBUG_PRINT("Signal received! Continuing execution.");
+        sem_close(signal);
+        sem_unlink(signalId);
+        return;
     }
+
+    DEBUG_PRINT("Signal received! Continuing execution.");
 
     // Cleanup
     sem_close(signal);
@@ -179,18 +181,20 @@ void sendSignal(const char* signalId){
 
 #elif defined(POSIX)
     // Opening an existing named semaphore
-    sem_t* signal = sem_open(signalId, O_CREAT, 0644, 1);
+    sem_t* signal = sem_open(signalId, 0);
     if (signal == SEM_FAILED) {
         DEBUG_ERR("sem_open failed for signal 8=====D~~");
         return;
     }
 
     // Incrementing (signaling) semaphore
-    if (sem_post(signal) == -1) {
+    if (sem_post(signal) < 0) {
         DEBUG_ERR("sem_post failed");
-    } else {
-        DEBUG_PRINT("Signal set! Continuing execution.");
+        sem_close(signal);
+        return;
     }
+
+    DEBUG_PRINT("Signal set! Continuing execution.");
 
     // Cleanup
     sem_close(signal);
@@ -201,7 +205,7 @@ void wait(int timeMs){
 #ifdef WIN_API
     Sleep(timeMs);
 #elif defined(POSIX)
-    struct timespec ts;
+    struct timespec ts{};
     ts.tv_sec = timeMs / 1000;                  // Convert milliseconds to seconds
     ts.tv_nsec = (timeMs % 1000) * 1000000L;    // Convert remainder to nanoseconds
 

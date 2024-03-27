@@ -1,20 +1,10 @@
 #include <gtest/gtest.h>
 #include <bedrock/bedrock.h>
 #include "synchronization.h"
-#include "serializers.h"
+#include "testingTypes.h"
 #include <iostream>
 
 class Client : public ::testing::Test {
-public:
-    static void onConnect1(){
-        // Create float to send
-        float f = 3.1415;
-
-        // Send the float
-        Bedrock::sendMessageToHost(&f);
-        std::cout <<"Sent data to host :)" << std::endl;
-    }
-
 protected:
     void SetUp() override {
 
@@ -22,6 +12,24 @@ protected:
 
     void TearDown() override {
         Bedrock::clearEventCallbacks();
+    }
+public:
+    static void onConnect1(){
+        //Create greeting to send
+        Greeting greet{};
+        greet.a = 10;
+        greet.b = 20;
+        greet.c = 30;
+
+        // Send the float
+        Bedrock::sendMessageToHost(greet);
+        std::cout <<"Sent data to host :)" << std::endl;
+    }
+
+    static void receiveGreeting(Greeting greet){
+        EXPECT_EQ(greet.a, 5);
+        EXPECT_EQ(greet.b, 15);
+        EXPECT_EQ(greet.c, 25);
     }
 };
 
@@ -69,15 +77,10 @@ TEST_F(Client, AbruptClientDisconnect){
 }
 
 TEST_F(Client, SendMessageToHost){
-    wait(4000);
     clientRendezvous();
 
     // Wait for server to start up
     clientWaitForSignal();
-
-    // Register serializers for use
-    REGISTER_SERIALIZER(float, serializeFloat);
-    REGISTER_DESERIALIZER(float, deserializeFloat);
 
     // Create hook that will send a message on connect
     Bedrock::clientConnectedToHost += onConnect1;

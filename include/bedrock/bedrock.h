@@ -8,8 +8,6 @@
 #include <enet/enet.h>
 #include <thread>
 
-
-
 class Bedrock{
 private:
     inline static ENetHost* host = nullptr;
@@ -37,10 +35,10 @@ public:
     static void clearEventCallbacks();
 
     template<typename T>
-    static void sendMessageToHost(T* msgObj){
-        Message msg = SERIALIZE<T>(msgObj);
-        ENetPacket* packet = enet_packet_create(msg.p_data,
-                                                msg.p_size,
+    static void sendMessageToHost(T& msgObj){
+        Message msg = serializeType(msgObj);
+        ENetPacket* packet = enet_packet_create(msg.data,
+                                                msg.size,
                                                 ENET_PACKET_FLAG_NO_ALLOCATE | ENET_PACKET_FLAG_RELIABLE);
 
         packet->freeCallback = deleteMessageData;
