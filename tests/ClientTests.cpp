@@ -41,7 +41,10 @@ TEST_F(Client, NormalConnection){
     clientWaitForSignal();
 
     EXPECT_TRUE(Bedrock::init());
-    EXPECT_TRUE(Bedrock::startClient());
+    BedrockConnetion conn;
+    conn.port = 8000;
+    conn.address = "127.0.0.1";
+    EXPECT_TRUE(Bedrock::startClient(conn));
 
     // Provide some time for the client to exist before shutting down
     wait(2000);
@@ -65,7 +68,10 @@ TEST_F(Client, AbruptClientDisconnect){
     clientWaitForSignal();
 
     EXPECT_TRUE(Bedrock::init());
-    EXPECT_TRUE(Bedrock::startClient());
+    BedrockConnetion conn;
+    conn.port = 8000;
+    conn.address = "127.0.0.1";
+    EXPECT_TRUE(Bedrock::startClient(conn));
 
     // Provide some time for the client to exist before shutting down
     wait(1000);
@@ -87,7 +93,10 @@ TEST_F(Client, SendMessageToHost){
 
     // Start the client
     Bedrock::init();
-    Bedrock::startClient();
+    BedrockConnetion conn;
+    conn.port = 8000;
+    conn.address = "127.0.0.1";
+    Bedrock::startClient(conn);
 
     // Wait a bit for packet to send
     wait(5000);

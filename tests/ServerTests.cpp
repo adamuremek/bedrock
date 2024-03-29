@@ -46,7 +46,9 @@ TEST_F(Server, NormalConnection){
     serverRendezvous();
 
     EXPECT_TRUE(Bedrock::init());
-    EXPECT_TRUE(Bedrock::startDedicatedHost());
+    BedrockConnetion conn;
+    conn.port = 8000;
+    EXPECT_TRUE(Bedrock::startDedicatedHost(conn));
 
     // Server has started. Tell client to proceed
     serverSendSignal();
@@ -65,7 +67,9 @@ TEST_F(Server, AbruptClientDisconnect){
     serverRendezvous();
 
     Bedrock::init();
-    Bedrock::startDedicatedHost();
+    BedrockConnetion conn;
+    conn.port = 8000;
+    Bedrock::startDedicatedHost(conn);
 
     // Server has started. Tell client to proceed
     serverSendSignal();
@@ -84,7 +88,9 @@ TEST_F(Server, SendMessageToHost){
     registerCallback(receiveGreeting);
 
     Bedrock::init();
-    Bedrock::startDedicatedHost();
+    BedrockConnetion conn;
+    conn.port = 8000;
+    Bedrock::startDedicatedHost(conn);
 
     // Server has started. Tell client to proceed
     serverSendSignal();

@@ -28,9 +28,9 @@ public:
 
     static bool init();
     static bool shutdown();
-    static bool startDedicatedHost();
+    static bool startDedicatedHost(const BedrockConnetion& conn);
     static bool stopDedicatedHost();
-    static bool startClient();
+    static bool startClient(const BedrockConnetion& hostConn);
     static bool stopClient();
     static void clearEventCallbacks();
 

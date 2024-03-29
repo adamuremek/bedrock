@@ -78,12 +78,9 @@ bool Bedrock::shutdown() {
     return true;
 }
 
-bool Bedrock::startDedicatedHost() {
-    ENetAddress address;
-    address.host = ENET_HOST_ANY;
-    address.port = 7000;
-
-    host = enet_host_create(&address, 32, 2, 0, 0);
+bool Bedrock::startDedicatedHost(const BedrockConnetion& conn) {
+    ENetAddress addr = conn.toEnetAddress();
+    host = enet_host_create(&addr, 32, 2, 0, 0);
 
     if(host == nullptr){
         std::cout << "ASS"<< std::endl;
@@ -104,13 +101,10 @@ bool Bedrock::stopDedicatedHost() {
     return true;
 }
 
-bool Bedrock::startClient() {
+bool Bedrock::startClient(const BedrockConnetion& hostConn) {
     host = enet_host_create(nullptr, 1, 2, 0, 0);
 
-    ENetAddress address;
-    enet_address_set_host(&address, "127.0.0.1");
-    address.port = 7000;
-
+    ENetAddress address = hostConn.toEnetAddress();
     peer = enet_host_connect(host, &address, 2, 0);
 
     eventLoopActive = true;
