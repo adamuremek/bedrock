@@ -4,60 +4,56 @@
 #include <functional>
 #include <cstdint>
 #include <string>
+#include <enet/enet.h>
+#include <type_traits>
+#include <vector>
 
-using ByteStream = unsigned char*;
-using Byte = unsigned char;
-using StreamSize = unsigned long;
+namespace Bedrock{
+    using ByteStream = unsigned char*;
+    using Byte = unsigned char;
+    using StreamSize = unsigned long;
+    using MemberInfo = std::pair<void*, std::size_t>;
 
-struct BedrockConnetion{
-    uint16_t port = 0;
-    std::string address = "";
-
-    ENetAddress toEnetAddress(){
-        ENetAddress enetAddress;
-        if (address.empty()) {
-            enetAddress.host = ENET_HOST_ANY; // Use ENET_HOST_ANY if address is empty
-        } else {
-            enet_address_set_host(&enetAddress, address.c_str()); // Convert address string to ENetAddress
-        }
-        enetAddress.port = port; // Set port
-        return enetAddress;
-    }
-};
-
-struct Message{
-    ByteStream data = nullptr;
-    StreamSize size = 0;
-    void release(){
-        delete data;
-        data = nullptr;
-        size = 0;
-    }
-};
-
-struct BedrockDataBase{
-    struct Registrar{
-        inline static uint32_t curId = 0;
-        explicit Registrar(uint32_t& id){
-            id = curId;
-            curId++;
+    struct Message{
+        ByteStream data = nullptr;
+        StreamSize size = 0;
+        void release(){
+            delete data;
+            data = nullptr;
+            size = 0;
         }
     };
-};
 
-template<typename T>
-struct BedrockDataType : public BedrockDataBase{
-    inline static uint32_t dataId;
-    inline static Registrar _reg{dataId};
-};
+    struct BedrockDataBase{
+        std::vector<MemberInfo> members;
+        size_t size = 0;
 
+        struct Registrar{
+            inline static uint32_t curId = 0;
+            explicit Registrar(uint32_t& id){
+                id = curId;
+                curId++;
+            }
+        };
 
-using SerializeFunc = std::function<Message(void*)>;
-using DeserializeFunc = std::function<void(Message, void*)>;
+        template<typename T>
+        void registerMember(T* member){
+            static_assert(!std::is_pointer<T>::value, "Pointer members are not allowed!");
+            members.emplace_back(static_cast<void*>(member), sizeof(T));
+            size += sizeof(T);
+        }
 
+    };
 
-#define BEDROCK_DATA_TYPE(Name) \
-    struct Name : public BedrockDataType<Name>
+    template<typename T>
+    struct BedrockDataType : public BedrockDataBase{
+        inline static uint32_t dataId;
+        inline static Registrar _reg{dataId};
+    };
+}
+
+#define BedrockMsgDatatype(Name) \
+    struct Name : public Bedrock::BedrockDataType<Name>
 
 
 #endif //BEDROCK_TYPES_H

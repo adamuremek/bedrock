@@ -1,7 +1,7 @@
 #ifndef TESTS_SYNCHRONIZATION_H
 #define TESTS_SYNCHRONIZATION_H
 
-#define POSIX
+#define WIN_API
 //#define SYNC_DEBUG
 
 #ifdef WIN_API

@@ -6,12 +6,16 @@
 #include <any>
 
 struct test{
-    int a;
-    int* b;
+    int a = 0;
+
+    test(){
+        std::cout << &a << std::endl;
+    }
 };
 
-int main(){
 
-    std::cout << sizeof(test) << std::endl;
+int main(){
+    test t{};
+    std::cout << &t.a << std::endl;
 }
 

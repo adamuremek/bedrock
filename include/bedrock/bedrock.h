@@ -8,34 +8,40 @@
 #include <enet/enet.h>
 #include <thread>
 
-class Bedrock{
-private:
-    inline static ENetHost* host = nullptr;
-    inline static ENetPeer* peer = nullptr;
-    inline static std::thread eventLoop;
-    inline static bool eventLoopActive = false;
+#define ACTOR_NONE static_cast<unsigned char>(0)
+#define ACTOR_CLIENT static_cast<unsigned char>(1)
+#define ACTOR_SERVER static_cast<unsigned char>(2)
 
-    static void pollClientEvents();
-    static void pollHostEvents();
 
-    inline static void deleteMessageData(ENetPacket* packet){
-        delete packet->data;
+namespace Bedrock{
+    // Non-visible declarations (outside of Bedrock)
+    namespace{
+        ENetHost* enetHost = nullptr;
+        ENetPeer* enetPeer = nullptr;
+        std::thread eventLoop;
+        bool eventLoopActive = false;
+        unsigned char actingAs = ACTOR_NONE;
+
+        inline void deleteMessageData(ENetPacket* packet){
+            delete packet->data;
+        }
     }
-public:
-    inline static Event<> clientConnectedToHost;
-    inline static Event<> clientDisconnectedFromHost;
 
 
-    static bool init();
-    static bool shutdown();
-    static bool startDedicatedHost(const BedrockConnetion& conn);
-    static bool stopDedicatedHost();
-    static bool startClient(const BedrockConnetion& hostConn);
-    static bool stopClient();
-    static void clearEventCallbacks();
+    // Visible declarations
+    Event<> clientConnectedToHost;
+    Event<> clientDisconnectedFromHost;
+
+    bool init();
+    bool shutdown();
+    bool startDedicatedHost(uint16_t port);
+    bool stopDedicatedHost();
+    bool startClient(uint16_t port, const char* hostId);
+    bool stopClient();
+    void clearEventCallbacks();
 
     template<typename T>
-    static void sendMessageToHost(T& msgObj){
+    void sendMessageToHost(T& msgObj){
         Message msg = serializeType(msgObj);
         ENetPacket* packet = enet_packet_create(msg.data,
                                                 msg.size,
@@ -43,12 +49,10 @@ public:
 
         packet->freeCallback = deleteMessageData;
 
-        enet_peer_send(peer, 0, packet);
+        enet_peer_send(enetPeer, 0, packet);
 
-        enet_host_flush(host);
+        enet_host_flush(enetHost);
     }
-};
-
-
+}
 
 #endif //BEDROCK_BEDROCK_H

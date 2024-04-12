@@ -9,6 +9,8 @@ private:
     inline static bool CLIENT_CONNECTED_FLAG = false;
     inline static bool CLIENT_DISCONNECTED_FLAG = false;
 
+
+
     static void clientConnect(){
         std::cout << "Client connected to host!" << std::endl;
         CLIENT_CONNECTED_FLAG = true;
@@ -20,6 +22,8 @@ private:
     }
 
 protected:
+    uint16_t connectionPort = 8000;
+
     static void evaluateFlags(){
         EXPECT_TRUE(CLIENT_CONNECTED_FLAG);
         EXPECT_TRUE(CLIENT_DISCONNECTED_FLAG);
@@ -34,7 +38,7 @@ protected:
         Bedrock::clearEventCallbacks();
     }
 public:
-    static void receiveGreeting(Greeting greet){
+    static void receiveGreeting(Greeting& greet, Bedrock::Message& outMsg){
         EXPECT_EQ(greet.a, 10);
         EXPECT_EQ(greet.b, 20);
         EXPECT_EQ(greet.c, 30);
@@ -46,9 +50,7 @@ TEST_F(Server, NormalConnection){
     serverRendezvous();
 
     EXPECT_TRUE(Bedrock::init());
-    BedrockConnetion conn;
-    conn.port = 8000;
-    EXPECT_TRUE(Bedrock::startDedicatedHost(conn));
+    EXPECT_TRUE(Bedrock::startDedicatedHost(connectionPort));
 
     // Server has started. Tell client to proceed
     serverSendSignal();
@@ -67,9 +69,7 @@ TEST_F(Server, AbruptClientDisconnect){
     serverRendezvous();
 
     Bedrock::init();
-    BedrockConnetion conn;
-    conn.port = 8000;
-    Bedrock::startDedicatedHost(conn);
+    Bedrock::startDedicatedHost(connectionPort);
 
     // Server has started. Tell client to proceed
     serverSendSignal();
@@ -85,12 +85,10 @@ TEST_F(Server, SendMessageToHost){
     serverRendezvous();
 
     //Register a callback for receiving the greeting
-    registerCallback(receiveGreeting);
+    Bedrock::registerMsgCallback(receiveGreeting);
 
     Bedrock::init();
-    BedrockConnetion conn;
-    conn.port = 8000;
-    Bedrock::startDedicatedHost(conn);
+    Bedrock::startDedicatedHost(connectionPort);
 
     // Server has started. Tell client to proceed
     serverSendSignal();
