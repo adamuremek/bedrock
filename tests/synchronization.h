@@ -1,11 +1,9 @@
 #ifndef TESTS_SYNCHRONIZATION_H
 #define TESTS_SYNCHRONIZATION_H
 
-#define WIN_API
 //#define SYNC_DEBUG
 
-#ifdef WIN_API
-#include <windows.h>
+
 #elif defined(POSIX)
 #include <fcntl.h>           // For O_* constants
 #include <sys/stat.h>        // For mode constants
@@ -26,7 +24,7 @@
 #define DEBUG_ERR(TEXT)
 #endif
 
-
+/*
 const int MAX_ATTEMPTS = 10;
 
 void rendezvous(const char* eventIdA, const char* eventIdB){
@@ -237,6 +235,8 @@ void serverSendSignal(){
 void clientSendSignal(){
     sendSignal("ServerWait");
 }
+
+*/
 
 
 #endif //TESTS_SYNCHRONIZATION_H

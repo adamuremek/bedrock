@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.27)
+cmake_minimum_required(VERSION 3.22)
 project(Bedrock)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -19,5 +19,8 @@ target_link_libraries(BedrockDebug PRIVATE unofficial::enet::enet Bedrock)
 target_include_directories(BedrockDebug PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
 
-add_subdirectory(tests)
-
+# Only allow tests to compile for unix-like systems such as Linux or MacOS
+# Tests should only be run on POSIX/UNIX systems
+if(UNIX)
+    add_subdirectory(tests)
+endif()

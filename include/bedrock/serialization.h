@@ -4,6 +4,7 @@
 #include "types.h"
 #include <typeindex>
 #include <utility>
+#include <cstring>
 
 namespace Bedrock{
     template<typename T>
