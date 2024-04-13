@@ -33,14 +33,29 @@ public:
             return false;
         }
 
+        bridges.push_back(brName);
+        return true;
+    }
+
+    static bool bringUpVirtualBridge(const std::string& brName){
         // Bring up the bridge device
-        cmd = "ip link set dev " + brName + " up";
+        std::string cmd = "ip link set dev " + brName + " up";
         if(system(cmd.c_str()) != 0){
             std::cerr << "Failed to bring up bridge: " << brName << std::endl;
             return false;
         }
 
-        bridges.push_back(brName);
+        return true;
+    }
+
+    static bool bringDownVirtualBridge(const std::string& brName){
+        // Bring up the bridge device
+        std::string cmd = "ip link set dev " + brName + " down";
+        if(system(cmd.c_str()) != 0){
+            std::cerr << "Failed to bring down bridge: " << brName << std::endl;
+            return false;
+        }
+
         return true;
     }
 };
