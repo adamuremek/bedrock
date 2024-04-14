@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <bedrock/bedrock.h>
-#include "synchronization.h"
-#include "testingTypes.h"
+#include "utilities/synchronization.h"
+#include "utilities/testingTypes.h"
 #include <iostream>
 
 class Client : public ::testing::Test {

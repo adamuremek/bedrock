@@ -1,6 +1,5 @@
-#include "ipc.h"
-
 #include <iostream>
+#include <ipc.h>
 #include "behaviors.h"
 
 int main(){
@@ -13,14 +12,13 @@ int main(){
 
 
     registerBehaviors();
+    IPC::startTests(2);
 
-    IPC::spawnProcess("clientBehavior1");
-    IPC::spawnProcess("clientBehavior1");
-    IPC::spawnProcess("clientBehavior1");
     IPC::spawnProcess("clientBehavior1");
     IPC::spawnProcess("clientBehavior2");
-
+    IPC::spawnProcess("clientBehavior2");
 
     IPC::waitForAllProcesses();
 
+    IPC::endTests();
 }

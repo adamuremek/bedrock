@@ -5,11 +5,14 @@
 #include <iostream>
 
 void clientBehavior1(){
-    std::cout << "penis balls" << std::endl;
+    std::cout << "My cock is hard" << std::endl;
+    IPC::addTestResult("My cock is indeed hard", true);
+
 }
 
 void clientBehavior2(){
-    std::cout << "fuck shit" << std::endl;
+    std::cout << "I shat my pants" << std::endl;
+    IPC::addTestResult("I did not shat my pants", false);
 }
 
 

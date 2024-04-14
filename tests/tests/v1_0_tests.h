@@ -1,0 +1,4 @@
+#ifndef TESTS_V1_0_TESTS_H
+#define TESTS_V1_0_TESTS_H
+
+#endif //TESTS_V1_0_TESTS_H

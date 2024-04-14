@@ -16,5 +16,11 @@ enable_testing()
 #target_link_libraries(MessagingTests PRIVATE GTest::gtest GTest::gtest_main Bedrock)
 
 add_executable(TestMain test_main.cpp)
-target_include_directories(TestMain PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_link_libraries(TestMain PRIVATE Bedrock)
+target_include_directories(TestMain PRIVATE
+        ${PROJECT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/utilities)
+target_link_libraries(TestMain PRIVATE
+        Bedrock
+        GTest::gtest
+        GTest::gtest_main
+)

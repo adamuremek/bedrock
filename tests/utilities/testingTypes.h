@@ -1,7 +1,7 @@
 #ifndef TESTS_SERIALIZERS_H
 #define TESTS_SERIALIZERS_H
 
-#include <bedrock/bedrock.h>
+#include "bedrock/bedrock.h"
 
 BedrockMsgDatatype(Greeting){
     int a = 0;
