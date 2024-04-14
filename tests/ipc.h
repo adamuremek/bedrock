@@ -12,7 +12,7 @@
 #ifndef TESTS_IPC_H
 #define TESTS_IPC_H
 
-#include "behavior_registry.h"
+#include <functional>
 #include <sched.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <cstdlib>
+#include <utility>
 #include <vector>
 #include <map>
 
@@ -185,11 +186,104 @@ public:
     
 };
 
+namespace IPC{
+    static vector<pid_t> spawnedProcs;
+
+    namespace {
+        class BehaviorRegistry{
+        private:
+            std::map<std::string, std::function<void()>> functions;
+            BehaviorRegistry(){}
+        public:
 
 
-void spawnApp(){
+            static BehaviorRegistry& getInstance(){
+                static BehaviorRegistry instance;
+                return instance;
+            }
 
+            void registerBehavior(const std::string& name, const std::function<void()>& func){
+                functions.insert(std::make_pair(name, func));
+            }
+
+            void useBehavior(const std::string& name){
+                auto it = functions.find(name);
+                if(it != functions.end()){
+                    it->second();
+                }else{
+                    std::cerr << "Behavior not found: " << name << std::endl;
+                }
+            }
+        };
+    }
+
+    inline void registerBehavior(const std::string& name, const std::function<void()>& func){
+        BehaviorRegistry::getInstance().registerBehavior(name, func);
+    }
+
+    inline void useBehavior(const std::string& name){
+        BehaviorRegistry::getInstance().useBehavior(name);
+    }
+
+    void spawnProcess(const string& behavior){
+        pid_t pid = fork();
+        if (pid == -1) {
+            std::cerr << "Fork failed." << std::endl;
+            exit(EXIT_FAILURE);
+        }
+
+        if (pid == 0) { // Child process
+            // Execute the specified behavior
+            useBehavior(behavior);
+
+            // Exit out fo the child process
+            exit(EXIT_SUCCESS);
+        }
+
+        spawnedProcs.push_back(pid);
+    }
+
+    void spawnProcess(const string& namespacePath, const string& behavior) {
+        pid_t pid = fork();
+        if (pid == -1) {
+            std::cerr << "Fork failed." << std::endl;
+            exit(EXIT_FAILURE);
+        }
+
+        if (pid == 0) { // Child process
+            // Open the network namespace file in the child to avoid affecting the parent
+            int fd = open(namespacePath.c_str(), O_RDONLY);
+            if (fd == -1) {
+                std::cerr << "Failed to open namespace file" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+
+            // Set the network namespace in the child
+            if (setns(fd, CLONE_NEWNET) == -1) {
+                std::cerr << "Failed to set namespace" << std::endl;
+                close(fd);
+                exit(EXIT_FAILURE);
+            }
+            close(fd);
+
+            // Execute the specified behavior
+            useBehavior(behavior);
+
+            // Exit out fo the child process
+            exit(EXIT_SUCCESS);
+        }
+
+        spawnedProcs.push_back(pid);
+    }
+
+    void waitForAllProcesses(){
+        for(const auto& pid : spawnedProcs){
+            int status;
+            waitpid(pid, &status, 0);
+        }
+
+        spawnedProcs.clear();
+    }
 }
-
 
 #endif //TESTS_IPC_H
