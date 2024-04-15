@@ -26,6 +26,8 @@
 #include <sys/mman.h>
 #include <gtest/gtest.h>
 #include <semaphore.h>
+#include <thread>
+#include <chrono>
 
 using namespace std;
 
@@ -191,7 +193,7 @@ public:
 
 namespace IPC {
     namespace {
-        static vector<pid_t> spawnedProcs;
+        vector<pid_t> spawnedProcs;
 
         //=======================NON-VISIBLE DATA FOR TEST RESULTS=======================//
         struct Result {
@@ -289,6 +291,10 @@ namespace IPC {
     }
 
     static void endTests() {
+        if(!results && !currentTest){
+            return;
+        }
+
         // Cleanup shared memory data
         munmap(results, shmResultsSize);
         close(shmResultsFd);
@@ -345,7 +351,7 @@ namespace IPC {
     }
 
     static void evaluateTestResults() {
-        for (int i = 0; i <= *currentTest; i++) {
+        for (int i = 0; i < *currentTest; i++) {
             ASSERT_TRUE(results[i].result) << "Test: " << results[i].testDescription;
         }
     }
@@ -377,7 +383,7 @@ namespace IPC {
         spawnedProcs.push_back(pid);
     }
 
-    void spawnProcess(const string &namespacePath, const string &behavior) {
+    void spawnProcess(const string &nsName, const string &behavior) {
         pid_t pid = fork();
         if (pid == -1) {
             std::cerr << "Fork failed." << std::endl;
@@ -386,7 +392,8 @@ namespace IPC {
 
         if (pid == 0) { // Child process
             // Open the network namespace file in the child to avoid affecting the parent
-            int fd = open(namespacePath.c_str(), O_RDONLY);
+            string nsPath = "/var/run/netns/" + nsName;
+            int fd = open(nsPath.c_str(), O_RDONLY);
             if (fd == -1) {
                 std::cerr << "Failed to open namespace file" << std::endl;
                 exit(EXIT_FAILURE);
@@ -417,6 +424,10 @@ namespace IPC {
         }
 
         spawnedProcs.clear();
+    }
+
+    void sleep(int milliseconds){
+        this_thread::sleep_for(chrono::milliseconds(milliseconds));
     }
 }
 

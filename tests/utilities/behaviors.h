@@ -3,16 +3,36 @@
 
 #include "ipc.h"
 #include <iostream>
+#include <cstdlib>
 
 void clientBehavior1(){
-    std::cout << "My cock is hard" << std::endl;
-    IPC::addTestResult("My cock is indeed hard", true);
+    std::string cmd = "ping -c 1 10.0.0.2 > /dev/null 2>&1";
+    int result = system(cmd.c_str());
 
+    IPC::sleep(2000);
+
+    if(result == 0){
+        std::cout << "Yay :)" << std::endl;
+        IPC::addTestResult("Pinged client2", true);
+    }else{
+        std::cout << "NO :(" << std::endl;
+        IPC::addTestResult("Pinged client2", false);
+    }
 }
 
 void clientBehavior2(){
-    std::cout << "I shat my pants" << std::endl;
-    IPC::addTestResult("I did not shat my pants", false);
+    std::string cmd = "ping -c 1 10.0.0.1 > /dev/null 2>&1";
+    int result = system(cmd.c_str());
+
+    IPC::sleep(2000);
+
+    if(result == 0){
+        std::cout << "Yayyyyyy :)" << std::endl;
+        IPC::addTestResult("Pinged client1", true);
+    }else{
+        std::cout << "NOooooooo :(" << std::endl;
+        IPC::addTestResult("Pinged client1", false);
+    }
 }
 
 

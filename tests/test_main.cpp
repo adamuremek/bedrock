@@ -1,24 +1,11 @@
 #include <iostream>
-#include <ipc.h>
-#include "behaviors.h"
+#include "includes.h"
+#include <v1_0_tests.h>
 
-int main(){
-//    VirtualNetwork::createVirtualBridge("v-br0");
-//    VirtualNetwork::createNetNamespace("ns-1");
-//    VirtualNetwork::createNetNamespace("ns-2");
-//    VirtualNetwork::connectNSToBridge("ns-1", "v-br0", "10.0.0.1/24");
-//    VirtualNetwork::connectNSToBridge("ns-2", "v-br0", "10.0.0.2/24");
-//    VirtualNetwork::resetNetwork();
-
-
+int main(int argc, char **argv){
+    // Hook behavior functions into the registry
     registerBehaviors();
-    IPC::startTests(2);
 
-    IPC::spawnProcess("clientBehavior1");
-    IPC::spawnProcess("clientBehavior2");
-    IPC::spawnProcess("clientBehavior2");
-
-    IPC::waitForAllProcesses();
-
-    IPC::endTests();
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
