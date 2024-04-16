@@ -20,6 +20,7 @@ namespace Bedrock{
         ENetPeer* enetPeer = nullptr;
         std::thread eventLoop;
         bool eventLoopActive = false;
+
         unsigned char actingAs = ACTOR_NONE;
 
         inline void deleteMessageData(ENetPacket* packet){
@@ -29,15 +30,19 @@ namespace Bedrock{
 
 
     // Visible declarations
-    Event<> clientConnectedToHost;
-    Event<> clientDisconnectedFromHost;
+    extern Event<> clientConnectedToHost;
+    extern Event<> clientDisconnectedFromHost;
+    extern bool isInitialized;
 
     bool init();
-    bool shutdown();
+    void shutdown();
+
     bool startDedicatedHost(uint16_t port);
     bool stopDedicatedHost();
     bool startClient(uint16_t port, const char* hostId);
     bool stopClient();
+
+
     void clearEventCallbacks();
 
     template<typename T>

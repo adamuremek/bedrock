@@ -25,6 +25,10 @@ namespace Bedrock{
             }
         }
 
+        std::size_t count(){
+            return subscribers.size();
+        }
+
         void clear(){
             subscribers.clear();
         }
@@ -49,6 +53,10 @@ namespace Bedrock{
             for(auto& subscriber : subscribers){
                 subscriber();
             }
+        }
+
+        std::size_t count(){
+            return subscribers.size();
         }
 
         void clear(){

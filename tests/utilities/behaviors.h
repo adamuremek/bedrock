@@ -1,44 +1,37 @@
 #ifndef TESTS_BEHAVIORS_H
 #define TESTS_BEHAVIORS_H
 
-#include "ipc.h"
-#include <iostream>
-#include <cstdlib>
 
-void clientBehavior1(){
-    std::string cmd = "ping -c 1 10.0.0.2 > /dev/null 2>&1";
-    int result = system(cmd.c_str());
-
-    IPC::sleep(2000);
-
-    if(result == 0){
-        std::cout << "Yay :)" << std::endl;
-        IPC::addTestResult("Pinged client2", true);
-    }else{
-        std::cout << "NO :(" << std::endl;
-        IPC::addTestResult("Pinged client2", false);
-    }
+void generalBehavior1(){
+    bool res = Bedrock::init();
+    IPC::addTestResult("Initialize bedrock", res);
 }
 
-void clientBehavior2(){
-    std::string cmd = "ping -c 1 10.0.0.1 > /dev/null 2>&1";
-    int result = system(cmd.c_str());
+void generalBehavior2(){
+    bool res = Bedrock::init();
+    IPC::addTestResult("Should have initialized", res);
+    IPC::addTestResult("Double check initialization", Bedrock::isInitialized);
 
-    IPC::sleep(2000);
+    Bedrock::clientConnectedToHost += []() -> void{};
+    Bedrock::clientDisconnectedFromHost += []() -> void{};
 
-    if(result == 0){
-        std::cout << "Yayyyyyy :)" << std::endl;
-        IPC::addTestResult("Pinged client1", true);
-    }else{
-        std::cout << "NOooooooo :(" << std::endl;
-        IPC::addTestResult("Pinged client1", false);
-    }
+    int callbackCount = Bedrock::clientConnectedToHost.count() + Bedrock::clientDisconnectedFromHost.count();
+
+    IPC::addTestResult("There should be a callback for each connection event", (callbackCount == 2));
+
+    Bedrock::shutdown();
+
+    IPC::addTestResult("Should now be shut down", !Bedrock::isInitialized);
+
+    callbackCount = Bedrock::clientConnectedToHost.count() + Bedrock::clientDisconnectedFromHost.count();
+
+    IPC::addTestResult("There should now be no callbacks for connection events", (callbackCount == 0));
 }
 
 
 void registerBehaviors(){
-    IPC::registerBehavior("clientBehavior1", clientBehavior1);
-    IPC::registerBehavior("clientBehavior2", clientBehavior2);
+    IPC::registerBehavior("generalBehavior1", generalBehavior1);
+    IPC::registerBehavior("generalBehavior2", generalBehavior2);
 }
 
 

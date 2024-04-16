@@ -243,6 +243,7 @@ namespace IPC {
                     it->second();
                 } else {
                     std::cerr << "Behavior not found: " << name << std::endl;
+                    exit(EXIT_FAILURE);
                 }
             }
         };
@@ -259,7 +260,7 @@ namespace IPC {
 
         // Size up the descriptor and map the memory to the results object
         shmResultsSize = sizeof(Result) * numTests;
-        if (ftruncate(shmResultsFd, shmResultsSize) == -1 || ftruncate(shmCurrentTestFd, shmResultsSize) == -1) {
+        if (ftruncate(shmResultsFd, shmResultsSize) == -1 || ftruncate(shmCurrentTestFd, shmCurrentTestSize) == -1) {
             cerr << "Failed to ftruncate shared memory." << endl;
             close(shmResultsFd);
             close(shmCurrentTestFd);
@@ -267,8 +268,16 @@ namespace IPC {
         }
 
         results = (Result *) mmap(nullptr, shmResultsSize, PROT_READ | PROT_WRITE, MAP_SHARED, shmResultsFd, 0);
-        currentTest = (int *) mmap(nullptr, shmCurrentTestSize, PROT_READ | PROT_WRITE, MAP_SHARED, shmCurrentTestFd,
-                                   0);
+        currentTest = (int *) mmap(nullptr, shmCurrentTestSize, PROT_READ | PROT_WRITE, MAP_SHARED, shmCurrentTestFd,0);
+
+        if(results == MAP_FAILED){
+            cout << "FUCK" << endl;
+        }
+
+        if(currentTest == MAP_FAILED){
+            cout << "SHIT" << endl;
+        }
+
         if (results == MAP_FAILED || currentTest == MAP_FAILED) {
             cerr << "Failed to map shared memory." << endl;
             close(shmResultsFd);
@@ -315,7 +324,6 @@ namespace IPC {
         shmResultsFd = 0;
         shmCurrentTestFd = 0;
         shmResultsSize = 0;
-        shmCurrentTestSize = 0;
 
         maxTestNum = 0;
     }
@@ -339,8 +347,6 @@ namespace IPC {
         // Store test information
         strcpy(results[*currentTest].testDescription, msg);
         results[*currentTest].result = result;
-
-        EXPECT_TRUE(result) << "Test: " << msg;
 
         *currentTest += 1;
 
@@ -421,6 +427,11 @@ namespace IPC {
         for (const auto &pid: spawnedProcs) {
             int status;
             waitpid(pid, &status, 0);
+
+            int exit_status = WEXITSTATUS(status);
+            if(exit_status == EXIT_FAILURE){
+                FAIL() << "Process terminated unsuccessfully.";
+            }
         }
 
         spawnedProcs.clear();

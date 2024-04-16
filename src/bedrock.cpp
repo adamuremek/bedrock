@@ -58,16 +58,21 @@ namespace Bedrock{
     }
 }
 
-bool Bedrock::init() {
-    enet_initialize();
+Bedrock::Event<> Bedrock::clientConnectedToHost;
+Bedrock::Event<> Bedrock::clientDisconnectedFromHost;
+bool Bedrock::isInitialized = false;
 
-    return true;
+
+
+bool Bedrock::init() {
+    isInitialized = enet_initialize() == 0;
+    return isInitialized;
 }
 
-bool Bedrock::shutdown() {
+void Bedrock::shutdown() {
     enet_deinitialize();
     clearEventCallbacks();
-    return true;
+    isInitialized = false;
 }
 
 bool Bedrock::startDedicatedHost(uint16_t port) {
