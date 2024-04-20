@@ -17,5 +17,14 @@ void topology1(){
 }
 
 
+void topology2(){
+    VirtualNetwork::createVirtualBridge("br0");
+    VirtualNetwork::createNetNamespace("Client");
+    VirtualNetwork::createNetNamespace("Server");
+
+    VirtualNetwork::connectNSToBridge("Client", "br0", "10.0.0.1/24");
+    VirtualNetwork::connectNSToBridge("Server", "br0", "10.0.0.2/24");
+}
+
 
 #endif //BEDROCK_NETWORK_TOPOLOGIES_H

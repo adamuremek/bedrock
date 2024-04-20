@@ -17,16 +17,21 @@ namespace Bedrock{
                         break;
                     }
                     case ENET_EVENT_TYPE_CONNECT: {
-                        clientConnectedToHost.invoke();
+                        if(Bedrock::actingAs == ACTOR_CLIENT){
+                            onHostConnect.invoke();
+                        } else if(Bedrock::actingAs == ACTOR_SERVER){
+                            onClientConnect.invoke();
+                        }
                         break;
                     }
                     case ENET_EVENT_TYPE_DISCONNECT: {
-                        clientDisconnectedFromHost.invoke();
-
                         if(Bedrock::actingAs == ACTOR_CLIENT){
+                            onHostDisconnect.invoke();
                             eventLoopActive = false;
                         }
-
+                        else if(Bedrock::actingAs == ACTOR_SERVER){
+                            onClientDisconnect.invoke();
+                        }
                         break;
                     }
                     case ENET_EVENT_TYPE_RECEIVE: {
@@ -58,10 +63,11 @@ namespace Bedrock{
     }
 }
 
-Bedrock::Event<> Bedrock::clientConnectedToHost;
-Bedrock::Event<> Bedrock::clientDisconnectedFromHost;
+Bedrock::Event<> Bedrock::onClientConnect;
+Bedrock::Event<> Bedrock::onClientDisconnect;
+Bedrock::Event<> Bedrock::onHostConnect;
+Bedrock::Event<> Bedrock::onHostDisconnect;
 bool Bedrock::isInitialized = false;
-
 
 
 bool Bedrock::init() {
@@ -70,10 +76,27 @@ bool Bedrock::init() {
 }
 
 void Bedrock::shutdown() {
+    // Shutdown if currently acting as the server
+    if(Bedrock::actingAs == ACTOR_SERVER){
+        eventLoopActive = false;
+        eventLoop.join();
+
+        enet_host_destroy(enetHost);
+    }else if(Bedrock::actingAs == ACTOR_CLIENT){
+        enet_peer_disconnect(enetPeer, 0);
+        enet_host_flush(enetHost);
+
+        eventLoop.join();
+
+        enet_host_destroy(enetHost);
+    }
+
     enet_deinitialize();
     clearEventCallbacks();
+    Bedrock::actingAs = ACTOR_NONE;
     isInitialized = false;
 }
+
 
 bool Bedrock::startDedicatedHost(uint16_t port) {
     ENetAddress addr{};
@@ -85,6 +108,7 @@ bool Bedrock::startDedicatedHost(uint16_t port) {
         std::cout << "ASS"<< std::endl;
     }
 
+    Bedrock::actingAs = ACTOR_SERVER;
 
     eventLoopActive = true;
     eventLoop = std::thread(Bedrock::pollEvents);
@@ -92,13 +116,6 @@ bool Bedrock::startDedicatedHost(uint16_t port) {
     return true;
 }
 
-bool Bedrock::stopDedicatedHost() {
-    eventLoopActive = false;
-    eventLoop.join();
-    enet_host_destroy(enetHost);
-
-    return true;
-}
 
 bool Bedrock::startClient(uint16_t port, const char* host) {
     enetHost = enet_host_create(nullptr, 1, 2, 0, 0);
@@ -115,17 +132,9 @@ bool Bedrock::startClient(uint16_t port, const char* host) {
     return true;
 }
 
-bool Bedrock::stopClient() {
-    enet_peer_disconnect(enetPeer, 0);
-    enet_host_flush(enetHost);
-
-    eventLoop.join();
-
-    enet_host_destroy(enetHost);
-    return true;
-}
-
 void Bedrock::clearEventCallbacks() {
-    clientConnectedToHost.clear();
-    clientDisconnectedFromHost.clear();
+    onClientConnect.clear();
+    onClientDisconnect.clear();
+    onHostConnect.clear();
+    onHostDisconnect.clear();
 }

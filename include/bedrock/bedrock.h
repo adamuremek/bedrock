@@ -30,17 +30,17 @@ namespace Bedrock{
 
 
     // Visible declarations
-    extern Event<> clientConnectedToHost;
-    extern Event<> clientDisconnectedFromHost;
+    extern Event<> onClientConnect;
+    extern Event<> onClientDisconnect;
+    extern Event<> onHostConnect;
+    extern Event<> onHostDisconnect;
     extern bool isInitialized;
 
     bool init();
     void shutdown();
 
     bool startDedicatedHost(uint16_t port);
-    bool stopDedicatedHost();
     bool startClient(uint16_t port, const char* hostId);
-    bool stopClient();
 
 
     void clearEventCallbacks();

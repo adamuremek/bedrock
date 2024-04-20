@@ -362,7 +362,6 @@ namespace IPC {
         }
     }
 
-
     inline void registerBehavior(const std::string &name, const std::function<void()> &func) {
         BehaviorRegistry::getInstance().registerBehavior(name, func);
     }
@@ -440,6 +439,40 @@ namespace IPC {
     void sleep(int milliseconds){
         this_thread::sleep_for(chrono::milliseconds(milliseconds));
     }
+
+    void waitForSignal(const string& signalName){
+        sem_t *sig = sem_open(signalName.c_str(), O_CREAT, 0644, 0);
+
+        if(sig == SEM_FAILED){
+            cerr << "sem_open failed in 'waitForSignal'" << endl;
+            return;
+        }
+
+        if(sem_wait(sig) == -1){
+            cerr << "sem_wait failed in 'waitForSignal'" << endl;
+            return;
+        }
+
+        sem_close(sig);
+        sem_unlink(semName);
+    }
+
+    void postSignal(const string& signalName){
+        sem_t *sig = sem_open(signalName.c_str(), O_CREAT, 0644, 0);
+
+        if(sig == SEM_FAILED){
+            cerr << "sem_open failed in 'postSignal'" << endl;
+            return;
+        }
+
+        if(sem_post(sig) == -1){
+            cerr << "sem_post failed in 'postSignal'" << endl;
+            return;
+        }
+
+        sem_close(sig);
+    }
+
 }
 
 #endif //TESTS_IPC_H

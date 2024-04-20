@@ -28,6 +28,13 @@ void generalBehavior2(){
     IPC::addTestResult("There should now be no callbacks for connection events", (callbackCount == 0));
 }
 
+void serverBehavior1(){
+    Bedrock::init();
+
+
+}
+
+
 
 void registerBehaviors(){
     IPC::registerBehavior("generalBehavior1", generalBehavior1);
