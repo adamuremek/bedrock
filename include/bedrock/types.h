@@ -13,6 +13,7 @@ namespace Bedrock{
     using Byte = unsigned char;
     using StreamSize = unsigned long;
     using MemberInfo = std::pair<void*, std::size_t>;
+    using ClientID = int;
 
     struct Message{
         ByteStream data = nullptr;

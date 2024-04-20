@@ -22,8 +22,25 @@ void topology2(){
     VirtualNetwork::createNetNamespace("Client");
     VirtualNetwork::createNetNamespace("Server");
 
-    VirtualNetwork::connectNSToBridge("Client", "br0", "10.0.0.1/24");
-    VirtualNetwork::connectNSToBridge("Server", "br0", "10.0.0.2/24");
+    VirtualNetwork::connectNSToBridge("Server", "br0", "10.0.0.1/24");
+    VirtualNetwork::connectNSToBridge("Client", "br0", "10.0.0.2/24");
+}
+
+void topology3(){
+    VirtualNetwork::createVirtualBridge("br0");
+    VirtualNetwork::createNetNamespace("Client1");
+    VirtualNetwork::createNetNamespace("Client2");
+    VirtualNetwork::createNetNamespace("Client3");
+    VirtualNetwork::createNetNamespace("Client4");
+    VirtualNetwork::createNetNamespace("Client5");
+    VirtualNetwork::createNetNamespace("Server");
+
+    VirtualNetwork::connectNSToBridge("Server", "br0", "10.0.0.1/24");
+    VirtualNetwork::connectNSToBridge("Client1", "br0", "10.0.0.2/24");
+    VirtualNetwork::connectNSToBridge("Client2", "br0", "10.0.0.3/24");
+    VirtualNetwork::connectNSToBridge("Client3", "br0", "10.0.0.4/24");
+    VirtualNetwork::connectNSToBridge("Client4", "br0", "10.0.0.5/24");
+    VirtualNetwork::connectNSToBridge("Client5", "br0", "10.0.0.6/24");
 }
 
 

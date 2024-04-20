@@ -370,7 +370,7 @@ namespace IPC {
         BehaviorRegistry::getInstance().useBehavior(name);
     }
 
-    void spawnProcess(const string &behavior) {
+    pid_t spawnProcess(const string &behavior) {
         pid_t pid = fork();
         if (pid == -1) {
             std::cerr << "Fork failed." << std::endl;
@@ -386,9 +386,10 @@ namespace IPC {
         }
 
         spawnedProcs.push_back(pid);
+        return pid;
     }
 
-    void spawnProcess(const string &nsName, const string &behavior) {
+    pid_t spawnProcess(const string &nsName, const string &behavior) {
         pid_t pid = fork();
         if (pid == -1) {
             std::cerr << "Fork failed." << std::endl;
@@ -420,6 +421,17 @@ namespace IPC {
         }
 
         spawnedProcs.push_back(pid);
+        return pid;
+    }
+
+    void waitForProcess(pid_t process){
+        int status;
+        waitpid(process, &status, 0);
+
+        int exit_status = WEXITSTATUS(status);
+        if(exit_status == EXIT_FAILURE){
+            FAIL() << "Process terminated unsuccessfully.";
+        }
     }
 
     void waitForAllProcesses() {

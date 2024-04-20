@@ -20,7 +20,9 @@ namespace Bedrock{
                         if(Bedrock::actingAs == ACTOR_CLIENT){
                             onHostConnect.invoke();
                         } else if(Bedrock::actingAs == ACTOR_SERVER){
-                            onClientConnect.invoke();
+                            auto clientId = static_cast<int>(event.peer - enetHost->peers);
+
+                            onClientConnect.invoke(clientId);
                         }
                         break;
                     }
@@ -30,7 +32,9 @@ namespace Bedrock{
                             eventLoopActive = false;
                         }
                         else if(Bedrock::actingAs == ACTOR_SERVER){
-                            onClientDisconnect.invoke();
+                            auto clientId = static_cast<int>(event.peer - enetHost->peers);
+
+                            onClientDisconnect.invoke(clientId);
                         }
                         break;
                     }
@@ -57,14 +61,12 @@ namespace Bedrock{
                     }
                 }
             }
-
-            std::cout << "===CLIENT POLL END===" << std::endl;
         }
     }
 }
 
-Bedrock::Event<> Bedrock::onClientConnect;
-Bedrock::Event<> Bedrock::onClientDisconnect;
+Bedrock::Event<Bedrock::ClientID> Bedrock::onClientConnect;
+Bedrock::Event<Bedrock::ClientID> Bedrock::onClientDisconnect;
 Bedrock::Event<> Bedrock::onHostConnect;
 Bedrock::Event<> Bedrock::onHostDisconnect;
 bool Bedrock::isInitialized = false;
@@ -123,6 +125,8 @@ bool Bedrock::startClient(uint16_t port, const char* host) {
     ENetAddress addr{};
     enet_address_set_host(&addr, host);
     addr.port = port;
+
+    Bedrock::actingAs = ACTOR_CLIENT;
 
     // Start event loop before connecting to server to ensure
     // 'onHostConnect' event is fired properly
