@@ -124,10 +124,12 @@ bool Bedrock::startClient(uint16_t port, const char* host) {
     enet_address_set_host(&addr, host);
     addr.port = port;
 
-    enetPeer = enet_host_connect(enetHost, &addr, 2, 0);
-
+    // Start event loop before connecting to server to ensure
+    // 'onHostConnect' event is fired properly
     eventLoopActive = true;
     eventLoop = std::thread(Bedrock::pollEvents);
+
+    enetPeer = enet_host_connect(enetHost, &addr, 2, 0);
 
     return true;
 }
