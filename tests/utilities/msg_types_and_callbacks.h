@@ -15,6 +15,12 @@ void ModifyNum1(Numbers& inNum, Bedrock::Message& outMsg){
     Bedrock::serializeType(inNum, outMsg);
 }
 
+void ModifyNum2(Numbers& inNum, Bedrock::Message& outMsg){
+    inNum.a += 1;
+
+    Bedrock::serializeType(inNum, outMsg);
+}
+
 void PrintNum(Numbers& inNum, Bedrock::Message& outMsg){
     std::cout << inNum.a << std::endl;
 }

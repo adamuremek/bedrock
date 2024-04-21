@@ -69,10 +69,39 @@ void serverBehavior1(){
 
 void serverBehavior2(){
     Bedrock::init();
-    Bedrock::registerMsgCallback(PrintNum);
+    Bedrock::registerMsgCallback(ModifyNum1);
 
     Bedrock::startDedicatedHost(8000);
     IPC::postSignal("serverStarted");
+    IPC::waitForSignal("stopServer");
+
+    Bedrock::shutdown();
+}
+
+void serverBehavior3(){
+    Bedrock::init();
+    Bedrock::registerMsgCallback(PrintNum);
+
+    Bedrock::onClientConnect += [](Bedrock::ClientID client) -> void{
+        if(client % 2 == 0){
+            Bedrock::addClientToLayer(client, 0);
+        }else{
+            Bedrock::addClientToLayer(client, 1);
+        }
+    };
+
+    Bedrock::startDedicatedHost(8000);
+    IPC::postSignal("serverStarted");
+
+    IPC::waitForSignal("sendMessages");
+
+    Numbers num1{};
+    Numbers num2{};
+    num1.a = 5;
+    num2.a = 10;
+
+    Bedrock::sendToLayer(num1, 0);
+    Bedrock::sendToLayer(num2, 1);
     IPC::waitForSignal("stopServer");
 
     Bedrock::shutdown();
@@ -120,11 +149,13 @@ void clientConnectAbruptDisconnect(){
 void clientSendNumberMessage(){
     Bedrock::init();
 
+    Bedrock::registerMsgCallback(PrintNum);
+
     Bedrock::onHostConnect += []() -> void{
         Numbers num{};
         num.a = 20;
 
-        Bedrock::sendMessageToHost(num);
+        Bedrock::sendToHost(num);
     };
 
 
@@ -133,16 +164,32 @@ void clientSendNumberMessage(){
     Bedrock::shutdown();
 }
 
+void clientBehavior4(){
+    Bedrock::init();
+
+    Bedrock::registerMsgCallback(ModifyNum2);
+
+    Bedrock::startClient(8000, "10.0.0.1");
+
+    IPC::sleep(8000);
+
+    Bedrock::shutdown();
+}
+
+
+
 
 void registerBehaviors(){
     IPC::registerBehavior("generalBehavior1", generalBehavior1);
     IPC::registerBehavior("generalBehavior2", generalBehavior2);
     IPC::registerBehavior("serverBehavior1", serverBehavior1);
     IPC::registerBehavior("serverBehavior2", serverBehavior2);
+    IPC::registerBehavior("serverBehavior3", serverBehavior3);
     IPC::registerBehavior("serverPassiveListen", serverPassiveListen);
     IPC::registerBehavior("clientConnectNormalDisconnect", clientConnectNormalDisconnect);
     IPC::registerBehavior("clientConnectAbruptDisconnect", clientConnectAbruptDisconnect);
     IPC::registerBehavior("clientSendNumberMessage", clientSendNumberMessage);
+    IPC::registerBehavior("clientBehavior4", clientBehavior4);
 }
 
 

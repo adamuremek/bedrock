@@ -2,6 +2,7 @@
 #define BEDROCK_BEDROCK_H
 
 #include "types.h"
+#include "layers.h"
 #include "serialization.h"
 #include "event.h"
 #include "messaging.h"
@@ -15,14 +16,6 @@
 
 
 namespace Bedrock{
-    // Non-visible declarations (outside of Bedrock)
-    namespace{
-
-        inline void deleteMessageData(ENetPacket* packet){
-            delete packet->data;
-        }
-    }
-
     class BedrockMetadata{
     private:
         ENetHost* enetHost = nullptr;
@@ -38,7 +31,7 @@ namespace Bedrock{
             return instance;
         }
 
-        inline bool isRole(const Role& roleQuery) { return roleQuery == role; }
+        inline bool isRole(const Role& roleQuery) const { return roleQuery == role; }
 
         // Getters
         inline ENetHost* getEnetHost() const {return enetHost; }
@@ -52,6 +45,12 @@ namespace Bedrock{
         inline void setRole(const Role& newRole) { role = newRole; }
     };
 
+    // Non-visible declarations (outside of Bedrock)
+    namespace{
+        inline void deleteMessageData(ENetPacket* packet){
+            delete packet->data;
+        }
+    }
 
     // Visible declarations
     extern Event<ClientID> onClientConnect;
@@ -68,18 +67,39 @@ namespace Bedrock{
 
     void clearEventCallbacks();
 
+
+    void sendMessageToHost(const Message& msg);
+
     template<typename T>
-    void sendMessageToHost(T& msgObj){
+    void sendToHost(T& msgObj){
         Message msg{};
         serializeType(msgObj, msg);
-        ENetPacket* packet = enet_packet_create(msg.data,
-                                                msg.size,
-                                                ENET_PACKET_FLAG_NO_ALLOCATE | ENET_PACKET_FLAG_RELIABLE);
 
-        packet->freeCallback = deleteMessageData;
-        enet_peer_send(BedrockMetadata::getInstance().getEnetPeer(), 0, packet);
-        enet_host_flush(BedrockMetadata::getInstance().getEnetHost());
+        sendMessageToHost(msg);
     }
+
+    void sendMessageToClient(const Message& msg, ClientID client);
+
+    template<typename T>
+    void sendToClient(T& msgObj, ClientID client){
+        Message msg{};
+        serializeType(msgObj, msg);
+
+        sendMessageToClient(msg, client);
+    }
+
+    void sendMessageToLayer(const Message& msg, LayerId layer);
+
+    template<typename T>
+    void sendToLayer(T& msgObj, LayerId layer){
+        Message msg{};
+        serializeType(msgObj, msg);
+
+        sendMessageToLayer(msg, layer);
+    }
+
+
+
 }
 
 #endif //BEDROCK_BEDROCK_H

@@ -21,7 +21,7 @@ namespace Bedrock{
                         if(metadata.isRole(ACTOR_CLIENT)){
                             onHostConnect.invoke();
                         } else if(metadata.isRole(ACTOR_SERVER)){
-                            auto clientId = static_cast<int>(event.peer - metadata.getEnetHost()->peers);
+                            auto clientId = static_cast<ClientID>(event.peer - metadata.getEnetHost()->peers);
 
                             onClientConnect.invoke(clientId);
                         }
@@ -33,28 +33,34 @@ namespace Bedrock{
                             metadata.setEventLoopActive(false);
                         }
                         else if(metadata.isRole(ACTOR_SERVER)){
-                            auto clientId = static_cast<int>(event.peer - metadata.getEnetHost()->peers);
+                            auto clientId = static_cast<ClientID>(event.peer - metadata.getEnetHost()->peers);
 
                             onClientDisconnect.invoke(clientId);
+                            removeClientFromLayers(clientId);
                         }
                         break;
                     }
                     case ENET_EVENT_TYPE_RECEIVE: {
-                        //debug start
-                        if(metadata.isRole(ACTOR_CLIENT)){
-                            std::cout << "Message received from host" << std::endl;
-                        }else if(metadata.isRole(ACTOR_SERVER)){
-                            std::cout << "Message received from client" << std::endl;
-
-                        }
-                        //debug end
                         Message incomingMsg{};
                         Message outgoingMsg{};
+
 
                         incomingMsg.data = event.packet->data;
                         incomingMsg.size = event.packet->dataLength;
 
                         executeMsgCallback(incomingMsg, outgoingMsg);
+
+                        if(metadata.isRole(ACTOR_CLIENT)){
+                            if(outgoingMsg.data != nullptr){
+                                sendMessageToHost(outgoingMsg);
+                            }
+                        }else if(metadata.isRole(ACTOR_SERVER)){
+                            if(outgoingMsg.data != nullptr){
+                                auto clientId = static_cast<ClientID>(event.peer - metadata.getEnetHost()->peers);
+                                sendMessageToClient(outgoingMsg, clientId);
+                            }
+                        }
+
                         enet_packet_destroy(event.packet);
 
                         break;
@@ -101,7 +107,6 @@ void Bedrock::shutdown() {
     isInitialized = false;
 }
 
-
 bool Bedrock::startDedicatedHost(uint16_t port) {
     BedrockMetadata& metadata = BedrockMetadata::getInstance();
 
@@ -122,7 +127,6 @@ bool Bedrock::startDedicatedHost(uint16_t port) {
 
     return true;
 }
-
 
 bool Bedrock::startClient(uint16_t port, const char* hostAddr) {
     BedrockMetadata& metadata = BedrockMetadata::getInstance();
@@ -155,4 +159,46 @@ void Bedrock::clearEventCallbacks() {
     onClientDisconnect.clear();
     onHostConnect.clear();
     onHostDisconnect.clear();
+}
+
+
+void Bedrock::sendMessageToHost(const Bedrock::Message &msg) {
+    ENetPacket* packet = enet_packet_create(msg.data,
+                                            msg.size,
+                                            ENET_PACKET_FLAG_NO_ALLOCATE | ENET_PACKET_FLAG_RELIABLE);
+
+    packet->freeCallback = deleteMessageData;
+    enet_peer_send(BedrockMetadata::getInstance().getEnetPeer(), 0, packet);
+    enet_host_flush(BedrockMetadata::getInstance().getEnetHost());
+}
+
+
+void Bedrock::sendMessageToClient(const Message& msg, ClientID client){
+    ENetPacket* packet = enet_packet_create(msg.data,
+                                            msg.size,
+                                            ENET_PACKET_FLAG_NO_ALLOCATE | ENET_PACKET_FLAG_RELIABLE);
+
+    packet->freeCallback = deleteMessageData;
+
+    ENetHost* host = BedrockMetadata::getInstance().getEnetHost();
+    ENetPeer* peer = &host->peers[client];
+    enet_peer_send(peer, 0, packet);
+    enet_host_flush(host);
+}
+
+void Bedrock::sendMessageToLayer(const Bedrock::Message &msg, Bedrock::LayerId layer) {
+    ENetPacket* packet = enet_packet_create(msg.data,
+                                            msg.size,
+                                            ENET_PACKET_FLAG_NO_ALLOCATE | ENET_PACKET_FLAG_RELIABLE);
+
+    packet->freeCallback = deleteMessageData;
+
+    ENetHost* host = BedrockMetadata::getInstance().getEnetHost();
+
+    for(const auto& client : getIdsFromLayer(layer)){
+        ENetPeer* peer = &host->peers[client];
+        enet_peer_send(peer, 0, packet);
+    }
+
+    enet_host_flush(host);
 }
