@@ -1,6 +1,5 @@
-#include <bedrock/bedrock.h>
-#include <gtest/gtest.h>
-#include <iostream>
+#ifndef TESTS_MESSAGING_H
+#define TESTS_MESSAGING_H
 
 BedrockMsgDatatype(TestType1){
     int int1 = 0;
@@ -98,3 +97,5 @@ TEST(MessagingCallbacks, ExecuteCallbackWithOutgoingMsg){
     ASSERT_EQ(t2.int1, 42069);
     ASSERT_EQ(t2.float1, 3.14159f);
 }
+
+#endif //TESTS_MESSAGING_H

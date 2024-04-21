@@ -8,31 +8,32 @@ namespace Bedrock{
     namespace{
         void pollEvents() {
             ENetEvent event;
+            BedrockMetadata& metadata = BedrockMetadata::getInstance();
 
-            while (eventLoopActive) {
-                enet_host_service(enetHost, &event, 0);
+            while (metadata.getEventLoopActive()) {
+                enet_host_service(metadata.getEnetHost(), &event, 0);
 
                 switch (event.type) {
                     case ENET_EVENT_TYPE_NONE:{
                         break;
                     }
                     case ENET_EVENT_TYPE_CONNECT: {
-                        if(Bedrock::actingAs == ACTOR_CLIENT){
+                        if(metadata.isRole(ACTOR_CLIENT)){
                             onHostConnect.invoke();
-                        } else if(Bedrock::actingAs == ACTOR_SERVER){
-                            auto clientId = static_cast<int>(event.peer - enetHost->peers);
+                        } else if(metadata.isRole(ACTOR_SERVER)){
+                            auto clientId = static_cast<int>(event.peer - metadata.getEnetHost()->peers);
 
                             onClientConnect.invoke(clientId);
                         }
                         break;
                     }
                     case ENET_EVENT_TYPE_DISCONNECT: {
-                        if(Bedrock::actingAs == ACTOR_CLIENT){
+                        if(metadata.isRole(ACTOR_CLIENT)){
                             onHostDisconnect.invoke();
-                            eventLoopActive = false;
+                            metadata.setEventLoopActive(false);
                         }
-                        else if(Bedrock::actingAs == ACTOR_SERVER){
-                            auto clientId = static_cast<int>(event.peer - enetHost->peers);
+                        else if(metadata.isRole(ACTOR_SERVER)){
+                            auto clientId = static_cast<int>(event.peer - metadata.getEnetHost()->peers);
 
                             onClientDisconnect.invoke(clientId);
                         }
@@ -40,23 +41,22 @@ namespace Bedrock{
                     }
                     case ENET_EVENT_TYPE_RECEIVE: {
                         //debug start
-                        if(Bedrock::actingAs == ACTOR_CLIENT){
+                        if(metadata.isRole(ACTOR_CLIENT)){
                             std::cout << "Message received from host" << std::endl;
-                        }else if(Bedrock::actingAs == ACTOR_SERVER){
+                        }else if(metadata.isRole(ACTOR_SERVER)){
                             std::cout << "Message received from client" << std::endl;
 
                         }
                         //debug end
-
                         Message incomingMsg{};
                         Message outgoingMsg{};
 
-                        outgoingMsg.data = event.packet->data;
-                        outgoingMsg.size = event.packet->dataLength;
+                        incomingMsg.data = event.packet->data;
+                        incomingMsg.size = event.packet->dataLength;
 
                         executeMsgCallback(incomingMsg, outgoingMsg);
-
                         enet_packet_destroy(event.packet);
+
                         break;
                     }
                 }
@@ -64,6 +64,7 @@ namespace Bedrock{
         }
     }
 }
+
 
 Bedrock::Event<Bedrock::ClientID> Bedrock::onClientConnect;
 Bedrock::Event<Bedrock::ClientID> Bedrock::onClientDisconnect;
@@ -78,62 +79,73 @@ bool Bedrock::init() {
 }
 
 void Bedrock::shutdown() {
+    BedrockMetadata& metadata = BedrockMetadata::getInstance();
+    
     // Shutdown if currently acting as the server
-    if(Bedrock::actingAs == ACTOR_SERVER){
-        eventLoopActive = false;
-        eventLoop.join();
+    if(metadata.isRole(ACTOR_SERVER)){
+        metadata.setEventLoopActive(false);
+        metadata.eventLoop.join();
 
-        enet_host_destroy(enetHost);
-    }else if(Bedrock::actingAs == ACTOR_CLIENT){
-        enet_peer_disconnect(enetPeer, 0);
-        enet_host_flush(enetHost);
+        enet_host_destroy(metadata.getEnetHost());
+    }else if(metadata.isRole(ACTOR_CLIENT)){
+        enet_peer_disconnect(metadata.getEnetPeer(), 0);
+        enet_host_flush(metadata.getEnetHost());
 
-        eventLoop.join();
-
-        enet_host_destroy(enetHost);
+        metadata.eventLoop.join();
+        enet_host_destroy(metadata.getEnetHost());
     }
 
     enet_deinitialize();
     clearEventCallbacks();
-    Bedrock::actingAs = ACTOR_NONE;
+    metadata.setRole(ACTOR_NONE);
     isInitialized = false;
 }
 
 
 bool Bedrock::startDedicatedHost(uint16_t port) {
+    BedrockMetadata& metadata = BedrockMetadata::getInstance();
+
     ENetAddress addr{};
     addr.port = port;
 
-    enetHost = enet_host_create(&addr, 32, 2, 0, 0);
-
-    if(enetHost == nullptr){
+    ENetHost* host = enet_host_create(&addr, 32, 2, 0, 0);
+    if(host == nullptr){
         std::cout << "ASS"<< std::endl;
+        return false;
+    }else{
+        metadata.setEnetHost(host);
     }
 
-    Bedrock::actingAs = ACTOR_SERVER;
-
-    eventLoopActive = true;
-    eventLoop = std::thread(Bedrock::pollEvents);
+    metadata.setRole(ACTOR_SERVER);
+    metadata.setEventLoopActive(true);
+    metadata.eventLoop = std::thread(Bedrock::pollEvents);
 
     return true;
 }
 
 
-bool Bedrock::startClient(uint16_t port, const char* host) {
-    enetHost = enet_host_create(nullptr, 1, 2, 0, 0);
+bool Bedrock::startClient(uint16_t port, const char* hostAddr) {
+    BedrockMetadata& metadata = BedrockMetadata::getInstance();
+
+    ENetHost* host = enet_host_create(nullptr, 1, 2, 0, 0);
+    metadata.setEnetHost(host);
 
     ENetAddress addr{};
-    enet_address_set_host(&addr, host);
+    enet_address_set_host(&addr, hostAddr);
     addr.port = port;
 
-    Bedrock::actingAs = ACTOR_CLIENT;
+    metadata.setRole(ACTOR_CLIENT);
 
-    // Start event loop before connecting to server to ensure
-    // 'onHostConnect' event is fired properly
-    eventLoopActive = true;
-    eventLoop = std::thread(Bedrock::pollEvents);
+    ENetPeer* peer = enet_host_connect(host, &addr, 2, 0);
+    if(peer == nullptr){
+        std::cerr << "HAHA GET DUNKED ON YOU STUPID" << std::endl;
+        return false;
+    }else{
+        metadata.setEnetPeer(peer);
+    }
 
-    enetPeer = enet_host_connect(enetHost, &addr, 2, 0);
+    metadata.setEventLoopActive(true);
+    metadata.eventLoop = std::thread(Bedrock::pollEvents);
 
     return true;
 }

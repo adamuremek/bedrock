@@ -454,7 +454,6 @@ namespace IPC {
 
     void waitForSignal(const string& signalName){
         sem_t *sig = sem_open(signalName.c_str(), O_CREAT, 0644, 0);
-
         if(sig == SEM_FAILED){
             cerr << "sem_open failed in 'waitForSignal'" << endl;
             return;
@@ -464,7 +463,6 @@ namespace IPC {
             cerr << "sem_wait failed in 'waitForSignal'" << endl;
             return;
         }
-
         sem_close(sig);
         sem_unlink(semName);
     }

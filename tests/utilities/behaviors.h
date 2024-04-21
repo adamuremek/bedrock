@@ -67,6 +67,17 @@ void serverBehavior1(){
     Bedrock::shutdown();
 }
 
+void serverBehavior2(){
+    Bedrock::init();
+    Bedrock::registerMsgCallback(PrintNum);
+
+    Bedrock::startDedicatedHost(8000);
+    IPC::postSignal("serverStarted");
+    IPC::waitForSignal("stopServer");
+
+    Bedrock::shutdown();
+}
+
 
 /**
  * Topology Used: 2
@@ -106,14 +117,32 @@ void clientConnectAbruptDisconnect(){
     exit(EXIT_SUCCESS);
 }
 
+void clientSendNumberMessage(){
+    Bedrock::init();
+
+    Bedrock::onHostConnect += []() -> void{
+        Numbers num{};
+        num.a = 20;
+
+        Bedrock::sendMessageToHost(num);
+    };
+
+
+    Bedrock::startClient(8000, "10.0.0.1");
+    IPC::sleep(1000);
+    Bedrock::shutdown();
+}
+
 
 void registerBehaviors(){
     IPC::registerBehavior("generalBehavior1", generalBehavior1);
     IPC::registerBehavior("generalBehavior2", generalBehavior2);
     IPC::registerBehavior("serverBehavior1", serverBehavior1);
+    IPC::registerBehavior("serverBehavior2", serverBehavior2);
     IPC::registerBehavior("serverPassiveListen", serverPassiveListen);
     IPC::registerBehavior("clientConnectNormalDisconnect", clientConnectNormalDisconnect);
     IPC::registerBehavior("clientConnectAbruptDisconnect", clientConnectAbruptDisconnect);
+    IPC::registerBehavior("clientSendNumberMessage", clientSendNumberMessage);
 }
 
 

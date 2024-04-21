@@ -5,17 +5,25 @@
 #include <bedrock/bedrock.h>
 #include <any>
 
-struct test{
-    int a = 0;
+namespace outer{
+    namespace{
 
-    test(){
+    }
+    static int* a;
+
+    void printAddr(){
         std::cout << &a << std::endl;
     }
-};
+
+}
+
 
 
 int main(){
-    test t{};
-    std::cout << &t.a << std::endl;
+    pid_t pid;
+    pid = fork();
+
+    outer::printAddr();
+
 }
 

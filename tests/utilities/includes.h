@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 #include <bedrock/bedrock.h>
 #include "ipc.h"
+#include "msg_types_and_callbacks.h"
 #include "behaviors.h"
 #include "network_topologies.h"
 

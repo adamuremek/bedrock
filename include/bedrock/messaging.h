@@ -1,7 +1,7 @@
 #ifndef BEDROCK_MESSAGING_H
 #define BEDROCK_MESSAGING_H
 #include "serialization.h"
-
+#include <iostream>
 namespace Bedrock{
     class MessageCallbackRegistry{
     private:
@@ -22,20 +22,17 @@ namespace Bedrock{
                 T t{};
 
                 deserializeMessage(incomingMsg, t);
-
                 callback(t, outgoingMsg);
             };
         }
 
         void executeCallback(const Message& incomingMsg, Message& outgoingMsg){
             uint32_t id = 0;
-
             std::memcpy(&id, incomingMsg.data, sizeof(uint32_t));
 
             if(callbacks.find(id) != callbacks.end()){
                 callbacks[id](incomingMsg, outgoingMsg);
             }
-
         }
     };
 
