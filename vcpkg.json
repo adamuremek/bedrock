@@ -3,9 +3,6 @@
   "version-string" : "1.0.0",
   "builtin-baseline" : "cf4ebef2294e164875ce17d7937f44d3e3ea156e",
   "dependencies" : [ {
-    "name" : "enet",
-    "version>=" : "1.3.17#2"
-  }, {
     "name" : "gtest",
     "version>=" : "1.14.0"
   } ]
