@@ -5,11 +5,14 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Import ENet
 add_subdirectory(${PROJECT_SOURCE_DIR}/extern/enet)
+# Import googletest
+add_subdirectory(${PROJECT_SOURCE_DIR}/extern/googletest)
 
 add_library(Bedrock STATIC
         src/layers.cpp
         src/bedrock.cpp
 )
+
 target_include_directories(Bedrock PUBLIC
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}/extern/enet/include)
