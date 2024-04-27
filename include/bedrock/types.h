@@ -35,10 +35,10 @@ namespace Bedrock{
 
     struct BedrockDataBase{
         std::vector<MemberInfo> members;
-        size_t size = 0;
+        size_t size{0};
 
         struct Registrar{
-            inline static uint32_t curId = 0;
+            inline static uint32_t curId{0};
             explicit Registrar(uint32_t& id){
                 id = curId;
                 curId++;
@@ -48,10 +48,15 @@ namespace Bedrock{
         template<typename T>
         void registerMember(T* member){
             static_assert(!std::is_pointer<T>::value, "Pointer members are not allowed!");
+
             members.emplace_back(static_cast<void*>(member), sizeof(T));
             size += sizeof(T);
         }
 
+        void registerBedrockMsgDatatypeMember(BedrockDataBase* member){
+            members.insert(members.end(), member->members.begin(), member->members.end());
+            size += member->size;
+        }
     };
 
     template<typename T>

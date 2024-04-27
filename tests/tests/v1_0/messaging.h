@@ -1,15 +1,7 @@
 #ifndef TESTS_MESSAGING_H
 #define TESTS_MESSAGING_H
 
-BedrockMsgDatatype(TestType1){
-    int int1 = 0;
-    float float1 = 0.0f;
 
-    TestType1(){
-        registerMember(&int1);
-        registerMember(&float1);
-    }
-};
 
 void callback1(TestType1& t, Bedrock::Message& outMsg){
     std::cout << "'int1' value is: " << t.int1<< std::endl;
@@ -82,7 +74,7 @@ TEST(MessagingCallbacks, ExecuteCallbackWithOutgoingMsg){
 
     // Simulate an incoming message
     Bedrock::Message incomingMsg{};
-    serializeType(t1, incomingMsg);
+    Bedrock::serializeType(t1, incomingMsg);
 
     // Simulate handling an incoming message
     Bedrock::executeMsgCallback(incomingMsg, outgoingMsg);
@@ -91,11 +83,60 @@ TEST(MessagingCallbacks, ExecuteCallbackWithOutgoingMsg){
 
     // Simulate receiving the outgoing message
     TestType1 t2{};
-    deserializeMessage(outgoingMsg, t2);
+    Bedrock::deserializeMessage(outgoingMsg, t2);
 
 
     ASSERT_EQ(t2.int1, 42069);
     ASSERT_EQ(t2.float1, 3.14159f);
+}
+
+TEST(MessagingCallbacks, NestedMessageTypes){
+    TestType3 t{};
+    t.a = 1;
+    t.t.a = 2;
+    t.t.b = 3;
+    t.t.c = 4;
+
+    Bedrock::Message outMsg{};
+
+    Bedrock::serializeType(t, outMsg);
+
+    TestType3 t2{};
+    Bedrock::deserializeMessage(outMsg, t2);
+
+    ASSERT_EQ(t2.a, 1);
+    ASSERT_EQ(t2.t.a, 2);
+    ASSERT_EQ(t2.t.b, 3);
+    ASSERT_EQ(t2.t.c, 4);
+
+    delete outMsg.data;
+}
+
+TEST(MessagingCallbacks, NestedMessageTypesWithCallbacks){
+    Bedrock::registerMsgCallback(HandleTestType3);
+
+    TestType3 t{};
+    t.a = 1;
+    t.t.a = 2;
+    t.t.b = 3;
+    t.t.c = 4;
+
+    Bedrock::Message inMsg{};
+    Bedrock::Message outMsg{};
+
+    Bedrock::serializeType(t, inMsg);
+
+    Bedrock::executeMsgCallback(inMsg, outMsg);
+
+    TestType3 t2{};
+    Bedrock::deserializeMessage(outMsg, t2);
+
+    ASSERT_EQ(t2.a, 5);
+    ASSERT_EQ(t2.t.a, 6);
+    ASSERT_EQ(t2.t.b, 7);
+    ASSERT_EQ(t2.t.c, 8);
+
+    delete outMsg.data;
 }
 
 #endif //TESTS_MESSAGING_H

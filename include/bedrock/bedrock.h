@@ -13,14 +13,15 @@
 #ifndef BEDROCK_BEDROCK_H
 #define BEDROCK_BEDROCK_H
 
+#include <thread>
+#include <iostream>
 #include "types.h"
 #include "layers.h"
 #include "serialization.h"
 #include "event.h"
 #include "messaging.h"
 #include <enet/enet.h>
-#include <thread>
-#include <iostream>
+
 
 
 
