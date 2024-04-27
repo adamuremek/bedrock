@@ -72,11 +72,11 @@ namespace Bedrock{
 }
 
 
-Bedrock::Event<Bedrock::ClientID> Bedrock::onClientConnect;
-Bedrock::Event<Bedrock::ClientID> Bedrock::onClientDisconnect;
-Bedrock::Event<> Bedrock::onHostConnect;
-Bedrock::Event<> Bedrock::onHostDisconnect;
-bool Bedrock::isInitialized = false;
+BEDROCK_API Bedrock::Event<Bedrock::ClientID> Bedrock::onClientConnect;
+BEDROCK_API Bedrock::Event<Bedrock::ClientID> Bedrock::onClientDisconnect;
+BEDROCK_API Bedrock::Event<> Bedrock::onHostConnect;
+BEDROCK_API Bedrock::Event<> Bedrock::onHostDisconnect;
+BEDROCK_API bool Bedrock::isInitialized = false;
 
 
 bool Bedrock::init() {
@@ -105,6 +105,10 @@ void Bedrock::shutdown() {
     clearEventCallbacks();
     metadata.setRole(ACTOR_NONE);
     isInitialized = false;
+}
+
+bool Bedrock::isRole(const Bedrock::Role &roleQuery) {
+    return Bedrock::BedrockMetadata::getInstance().isRole(roleQuery);
 }
 
 bool Bedrock::startDedicatedHost(uint16_t port) {

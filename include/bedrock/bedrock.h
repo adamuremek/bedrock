@@ -1,3 +1,15 @@
+#ifdef _WIN32
+#ifdef BEDROCK_DLL
+#define BEDROCK_API __declspec(dllexport)
+#else
+#define BEDROCK_API __declspec(dllimport)
+#endif // endif BEDROCK_DLL
+#else
+#define BEDROCK_API
+#endif
+
+
+
 #ifndef BEDROCK_BEDROCK_H
 #define BEDROCK_BEDROCK_H
 
@@ -10,13 +22,10 @@
 #include <thread>
 #include <iostream>
 
-#define ACTOR_NONE static_cast<unsigned char>(0)
-#define ACTOR_CLIENT static_cast<unsigned char>(1)
-#define ACTOR_SERVER static_cast<unsigned char>(2)
 
 
 namespace Bedrock{
-    class BedrockMetadata{
+    class BEDROCK_API BedrockMetadata{
     private:
         ENetHost* enetHost = nullptr;
         ENetPeer* enetPeer = nullptr;
@@ -53,22 +62,25 @@ namespace Bedrock{
     }
 
     // Visible declarations
-    extern Event<ClientID> onClientConnect;
-    extern Event<ClientID> onClientDisconnect;
-    extern Event<> onHostConnect;
-    extern Event<> onHostDisconnect;
-    extern bool isInitialized;
+    extern BEDROCK_API Event<ClientID> onClientConnect;
+    extern BEDROCK_API Event<ClientID> onClientDisconnect;
+    extern BEDROCK_API Event<> onHostConnect;
+    extern BEDROCK_API Event<> onHostDisconnect;
+    extern BEDROCK_API bool isInitialized;
 
-    bool init();
-    void shutdown();
+    bool BEDROCK_API init();
+    void BEDROCK_API shutdown();
+    bool BEDROCK_API isRole(const Role& roleQuery);
 
-    bool startDedicatedHost(uint16_t port);
-    bool startClient(uint16_t port, const char* hostAddr);
+    bool BEDROCK_API startDedicatedHost(uint16_t port);
+    bool BEDROCK_API startClient(uint16_t port, const char* hostAddr);
 
-    void clearEventCallbacks();
+    void BEDROCK_API clearEventCallbacks();
 
 
-    void sendMessageToHost(const Message& msg);
+    void BEDROCK_API sendMessageToHost(const Message& msg);
+    void BEDROCK_API sendMessageToClient(const Message& msg, ClientID client);
+    void BEDROCK_API sendMessageToLayer(const Message& msg, LayerId layer);
 
     template<typename T>
     void sendToHost(T& msgObj){
@@ -78,8 +90,6 @@ namespace Bedrock{
         sendMessageToHost(msg);
     }
 
-    void sendMessageToClient(const Message& msg, ClientID client);
-
     template<typename T>
     void sendToClient(T& msgObj, ClientID client){
         Message msg{};
@@ -88,8 +98,6 @@ namespace Bedrock{
         sendMessageToClient(msg, client);
     }
 
-    void sendMessageToLayer(const Message& msg, LayerId layer);
-
     template<typename T>
     void sendToLayer(T& msgObj, LayerId layer){
         Message msg{};
@@ -97,9 +105,6 @@ namespace Bedrock{
 
         sendMessageToLayer(msg, layer);
     }
-
-
-
 }
 
 #endif //BEDROCK_BEDROCK_H

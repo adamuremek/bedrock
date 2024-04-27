@@ -15,7 +15,13 @@ namespace Bedrock{
     using MemberInfo = std::pair<void*, std::size_t>;
     using ClientID = int;
     using LayerId = uint32_t;
-    using Role = unsigned char;
+
+
+    enum Role : unsigned char{
+        ACTOR_NONE,
+        ACTOR_SERVER,
+        ACTOR_CLIENT
+    };
 
     struct Message{
         ByteStream data = nullptr;

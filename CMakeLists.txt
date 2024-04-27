@@ -5,8 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 #======================CONFIGURATION========================#
 
-# Option to build as a shared library
-option(BUILD_SHARED_LIBS "Build as a shared library" ON)
+set(BUILD_SHARED_LIBS ON)
 
 include(CheckFunctionExists)
 include(CheckStructHasMember)
@@ -110,9 +109,12 @@ source_group(source FILES ${SOURCE_FILES})
 if(WIN32 AND BUILD_SHARED_LIBS AND (MSVC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
     add_definitions(-DENET_DLL=1)
     add_definitions(-DENET_BUILDING_LIB)
+
+    add_definitions(-DBEDROCK_DLL=1)
+    add_definitions(-DBEDROCK_BUILDING_LIB)
 endif()
 
-add_library(Bedrock
+add_library(Bedrock SHARED
         ${INCLUDE_ENET}
         ${INCLUDE_BEDROCK}
         ${SOURCE_FILES}
