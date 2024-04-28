@@ -12,8 +12,8 @@ void generalBehavior2(){
     IPC::addTestResult("Should have initialized", res);
     IPC::addTestResult("Double check initialization", Bedrock::isInitialized);
 
-    Bedrock::onClientConnect += [](Bedrock::ClientID id) -> void{};
-    Bedrock::onClientDisconnect += [](Bedrock::ClientID id) -> void{};
+    Bedrock::onClientConnect.subscribe([](const Bedrock::ClientID& id) -> void{});
+    Bedrock::onClientDisconnect.subscribe([](const Bedrock::ClientID& id) -> void{});
 
     int callbackCount = Bedrock::onClientConnect.count() + Bedrock::onClientDisconnect.count();
 
@@ -31,13 +31,13 @@ void generalBehavior2(){
 void serverPassiveListen(){
     Bedrock::init();
 
-    Bedrock::onClientConnect += [](Bedrock::ClientID id) -> void{
+    Bedrock::onClientConnect.subscribe([](const Bedrock::ClientID& id) -> void{
         cout << id << " CONNECTED [TEST]" << endl;
-    };
+    });
 
-    Bedrock::onClientDisconnect += [](Bedrock::ClientID id) -> void{
+    Bedrock::onClientDisconnect.subscribe([](const Bedrock::ClientID& id) -> void{
         cout << id << " DISCONNECTED [TEST]" << endl;
-    };
+    });
 
     Bedrock::startDedicatedHost(8000);
     IPC::postSignal("serverStarted");
@@ -50,14 +50,14 @@ void serverPassiveListen(){
 void serverBehavior1(){
     Bedrock::init();
 
-    Bedrock::onClientConnect += [](Bedrock::ClientID id) -> void{
+    Bedrock::onClientConnect.subscribe([](const Bedrock::ClientID& id) -> void{
       cout << "CLIENT CONNECTED [TEST]" << endl;
-    };
+    });
 
-    Bedrock::onClientDisconnect += [](Bedrock::ClientID id) -> void{
+    Bedrock::onClientDisconnect.subscribe([](const Bedrock::ClientID& id) -> void{
       cout << "CLIENT DISCONNECTED [TEST]" << endl;
       IPC::postSignal("stopServer");
-    };
+    });
 
     Bedrock::startDedicatedHost(8000);
     IPC::postSignal("serverStarted");
@@ -82,13 +82,13 @@ void serverBehavior3(){
     Bedrock::init();
     Bedrock::registerMsgCallback(PrintNum);
 
-    Bedrock::onClientConnect += [](Bedrock::ClientID client) -> void{
+    Bedrock::onClientConnect.subscribe([](const Bedrock::ClientID& client) -> void{
         if(client % 2 == 0){
             Bedrock::addClientToLayer(client, 0);
         }else{
             Bedrock::addClientToLayer(client, 1);
         }
-    };
+    });
 
     Bedrock::startDedicatedHost(8000);
     IPC::postSignal("serverStarted");
@@ -116,13 +116,13 @@ void clientConnectNormalDisconnect(){
     // Uses topology 2
     Bedrock::init();
 
-    Bedrock::onHostConnect += []() -> void{
+    Bedrock::onHostConnect.subscribe([]() -> void{
         cout << "CONNECTED TO HOST" << endl;
-    };
+    });
 
-    Bedrock::onHostDisconnect += []() -> void{
+    Bedrock::onHostDisconnect.subscribe([]() -> void{
         cout << "DISCONNECTED FROM HOST" << endl;
-    };
+    });
 
     Bedrock::startClient(8000, "10.0.0.1");
 
@@ -151,12 +151,12 @@ void clientSendNumberMessage(){
 
     Bedrock::registerMsgCallback(PrintNum);
 
-    Bedrock::onHostConnect += []() -> void{
+    Bedrock::onHostConnect.subscribe([]() -> void{
         Numbers num{};
         num.a = 20;
 
         Bedrock::sendToHost(num);
-    };
+    });
 
 
     Bedrock::startClient(8000, "10.0.0.1");

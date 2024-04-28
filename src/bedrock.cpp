@@ -72,8 +72,8 @@ namespace Bedrock{
 }
 
 
-BEDROCK_API Bedrock::Event<Bedrock::ClientID> Bedrock::onClientConnect;
-BEDROCK_API Bedrock::Event<Bedrock::ClientID> Bedrock::onClientDisconnect;
+BEDROCK_API Bedrock::Event<const Bedrock::ClientID&> Bedrock::onClientConnect;
+BEDROCK_API Bedrock::Event<const Bedrock::ClientID&> Bedrock::onClientDisconnect;
 BEDROCK_API Bedrock::Event<> Bedrock::onHostConnect;
 BEDROCK_API Bedrock::Event<> Bedrock::onHostDisconnect;
 BEDROCK_API bool Bedrock::isInitialized = false;

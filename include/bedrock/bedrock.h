@@ -63,8 +63,8 @@ namespace Bedrock{
     }
 
     // Visible declarations
-    extern BEDROCK_API Event<ClientID> onClientConnect;
-    extern BEDROCK_API Event<ClientID> onClientDisconnect;
+    extern BEDROCK_API Event<const ClientID&> onClientConnect;
+    extern BEDROCK_API Event<const ClientID&> onClientDisconnect;
     extern BEDROCK_API Event<> onHostConnect;
     extern BEDROCK_API Event<> onHostDisconnect;
     extern BEDROCK_API bool isInitialized;
