@@ -7,7 +7,7 @@ namespace Bedrock{
     private:
         std::unordered_map<uint32_t,  std::function<void(const Message&, Message&)>> callbacks;
     public:
-        static MessageCallbackRegistry& singleton(){
+        static BEDROCK_API MessageCallbackRegistry& singleton(){
             static MessageCallbackRegistry callbackRegistry;
             return callbackRegistry;
         }
@@ -34,15 +34,23 @@ namespace Bedrock{
                 callbacks[id](incomingMsg, outgoingMsg);
             }
         }
+
+        void clearCallbacks(){
+            callbacks.clear();
+        }
     };
 
     template<typename MessageType>
-    inline void registerMsgCallback(void (*func)(MessageType&, Message&)){
+    inline void BEDROCK_API registerMsgCallback(void (*func)(MessageType&, Message&)){
         MessageCallbackRegistry::singleton().registerCallback<MessageType>(func);
     }
 
-    inline void executeMsgCallback(const Message& incomingMsg, Message& outgoingMsg){
+    inline void BEDROCK_API executeMsgCallback(const Message& incomingMsg, Message& outgoingMsg){
         MessageCallbackRegistry::singleton().executeCallback(incomingMsg, outgoingMsg);
+    }
+
+    inline void BEDROCK_API clearMsgCallbacks(){
+        MessageCallbackRegistry::singleton().clearCallbacks();
     }
 }
 

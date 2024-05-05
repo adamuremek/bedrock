@@ -55,7 +55,7 @@ namespace Bedrock{
         inline void setRole(const Role& newRole) { role = newRole; }
     };
 
-    // Non-visible declarations (outside of Bedrock)
+    // Non-visible declarations (outside of Bedrock namespace)
     namespace{
         inline void deleteMessageData(ENetPacket* packet){
             delete packet->data;
@@ -77,6 +77,7 @@ namespace Bedrock{
     bool BEDROCK_API startClient(uint16_t port, const char* hostAddr);
 
     void BEDROCK_API clearEventCallbacks();
+
 
 
     void BEDROCK_API sendMessageToHost(const Message& msg);
