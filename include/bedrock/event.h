@@ -18,7 +18,7 @@ namespace Bedrock{
         template<typename T>
         void subscribe(T* obj,void(T::*func)(Args...)){
             uintptr_t funcPtrVal = 0;
-            uintptr_t objPtrVal = reinterpret_cast<uintptr_t >(obj);
+            auto objPtrVal = reinterpret_cast<uintptr_t >(obj);
             std::memcpy(&funcPtrVal, &func, sizeof(func));
             uint64_t hashcode = hash(funcPtrVal, objPtrVal);
 
@@ -36,7 +36,7 @@ namespace Bedrock{
         template<typename T>
         void unsubscribe(T* obj,void(T::*func)(Args...)){
             uintptr_t funcPtrVal = 0;
-            uintptr_t objPtrVal = reinterpret_cast<uintptr_t >(obj);
+            auto objPtrVal = reinterpret_cast<uintptr_t >(obj);
             std::memcpy(&funcPtrVal, &func, sizeof(func));
             uint64_t hashcode = hash(funcPtrVal, objPtrVal);
 
@@ -86,7 +86,7 @@ namespace Bedrock{
         template<typename T>
         void subscribe(T* obj,void(T::*func)()){
             uintptr_t funcPtrVal = 0;
-            uintptr_t objPtrVal = reinterpret_cast<uintptr_t >(obj);
+            auto objPtrVal = reinterpret_cast<uintptr_t >(obj);
             std::memcpy(&funcPtrVal, &func, sizeof(func));
             uint64_t hashcode = hash(funcPtrVal, objPtrVal);
 

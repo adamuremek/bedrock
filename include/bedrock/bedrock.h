@@ -1,11 +1,11 @@
 #ifdef _WIN32
-#ifdef BEDROCK_DLL
-#define BEDROCK_API __declspec(dllexport)
+    #ifdef BEDROCK_DLL
+        #define BEDROCK_API __declspec(dllexport)
+    #else
+        #define BEDROCK_API __declspec(dllimport)
+    #endif // endif BEDROCK_DLL
 #else
-#define BEDROCK_API __declspec(dllimport)
-#endif // endif BEDROCK_DLL
-#else
-#define BEDROCK_API
+    #define BEDROCK_API
 #endif
 
 
@@ -21,9 +21,6 @@
 #include "event.h"
 #include "messaging.h"
 #include <enet/enet.h>
-
-
-
 
 namespace Bedrock{
     class BEDROCK_API BedrockMetadata{
