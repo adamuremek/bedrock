@@ -68,31 +68,8 @@ endif()
 #====================== BUILD ======================#
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
-set(INCLUDE_ENET_PREFIX ${PROJECT_SOURCE_DIR}/include/enet)
-set(INCLUDE_BEDROCK_PREFIX ${PROJECT_SOURCE_DIR}/include/bedrock)
 set(SRC_ENET_PREFIX  ${PROJECT_SOURCE_DIR}/src/enet)
 set(SRC_BEDROCK_PREFIX  ${PROJECT_SOURCE_DIR}/src)
-
-set(INCLUDE_ENET
-        ${INCLUDE_ENET_PREFIX}/callbacks.h
-        ${INCLUDE_ENET_PREFIX}/enet.h
-        ${INCLUDE_ENET_PREFIX}/list.h
-        ${INCLUDE_ENET_PREFIX}/protocol.h
-        ${INCLUDE_ENET_PREFIX}/time.h
-        ${INCLUDE_ENET_PREFIX}/types.h
-        ${INCLUDE_ENET_PREFIX}/unix.h
-        ${INCLUDE_ENET_PREFIX}/utility.h
-        ${INCLUDE_ENET_PREFIX}/win32.h
-)
-
-set(INCLUDE_BEDROCK
-        ${INCLUDE_BEDROCK_PREFIX}/bedrock.h
-        ${INCLUDE_BEDROCK_PREFIX}/event.h
-        ${INCLUDE_BEDROCK_PREFIX}/layers.h
-        ${INCLUDE_BEDROCK_PREFIX}/messaging.h
-        ${INCLUDE_BEDROCK_PREFIX}/serialization.h
-        ${INCLUDE_BEDROCK_PREFIX}/types.h
-)
 
 set(SOURCE_FILES
         ${SRC_ENET_PREFIX}/callbacks.c
@@ -109,23 +86,19 @@ set(SOURCE_FILES
 )
 
 
-set(BEDROCK_FILES
-        ${INCLUDE_ENET}
-        ${INCLUDE_BEDROCK}
-        ${SOURCE_FILES}
-)
-if(WIN32)
-    set(BEDROCK_LIBS winmm ws2_32)
-else()
-    set(BEDROCK_LIBS)
-endif()
-
+set(BEDROCK_FILES ${SOURCE_FILES})
+set(BEDROCK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(BEDROCK_LIBS)
 set(BEDROCK_DEFINITIONS
         -DENET_DLL=1
         -DENET_BUILDING_LIB
         -DBEDROCK_DLL=1
-        -DBEDROCK_BUILDING_LIB
-)
+        -DBEDROCK_BUILDING_LIB)
+
+
+if(WIN32)
+    set(BEDROCK_LIBS winmm ws2_32)
+endif()
 
 if(NOT BUILD_AS_STANDALONE)
     set(BEDROCK_FILES ${BEDROCK_FILES} PARENT_SCOPE)
