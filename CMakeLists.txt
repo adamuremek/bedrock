@@ -120,9 +120,6 @@ else()
     set(BEDROCK_LIBS)
 endif()
 
-#source_group(include FILES ${INCLUDE_FILES})
-#source_group(source FILES ${SOURCE_FILES})
-
 if(WIN32 AND BUILD_SHARED_LIBS AND (MSVC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
     add_definitions(-DENET_DLL=1)
     add_definitions(-DENET_BUILDING_LIB)
