@@ -108,18 +108,36 @@ set(SOURCE_FILES
         ${SRC_BEDROCK_PREFIX}/layers.cpp
 )
 
-set(BEDROCK_FILES
-        ${INCLUDE_ENET}
-        ${INCLUDE_BEDROCK}
-        ${SOURCE_FILES}
-        PARENT_SCOPE
-)
+if(INSTALL_AS_STANDALONE)
+    set(BEDROCK_FILES
+            ${INCLUDE_ENET}
+            ${INCLUDE_BEDROCK}
+            ${SOURCE_FILES}
+    )
+    if(WIN32)
+        set(BEDROCK_LIBS winmm ws2_32)
+    else()
+        set(BEDROCK_LIBS)
+    endif()
 
-if(WIN32)
-    set(BEDROCK_LIBS winmm ws2_32 PARENT_SCOPE)
 else()
-    set(BEDROCK_LIBS PARENT_SCOPE)
+    set(BEDROCK_FILES
+            ${INCLUDE_ENET}
+            ${INCLUDE_BEDROCK}
+            ${SOURCE_FILES}
+            PARENT_SCOPE
+    )
+
+    if(WIN32)
+        set(BEDROCK_LIBS winmm ws2_32 PARENT_SCOPE)
+    else()
+        set(BEDROCK_LIBS PARENT_SCOPE)
+    endif()
 endif()
+
+
+
+
 
 if(WIN32 AND BUILD_SHARED_LIBS AND (MSVC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
     add_definitions(-DENET_DLL=1)
