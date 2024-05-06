@@ -3,9 +3,15 @@ project(Bedrock VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
-#======================CONFIGURATION========================#
+#====================== CONFIGURATION ========================#
 
 set(BUILD_SHARED_LIBS ON)
+
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+    set(INSTALL_AS_STANDALONE TRUE)
+else()
+    set(INSTALL_AS_STANDALONE FALSE)
+endif()
 
 include(CheckFunctionExists)
 include(CheckStructHasMember)
@@ -60,7 +66,7 @@ if(HAS_SOCKLEN_T)
 endif()
 
 
-#======================BUILD======================#
+#====================== BUILD ======================#
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 set(INCLUDE_ENET_PREFIX ${PROJECT_SOURCE_DIR}/include/enet)
@@ -137,10 +143,12 @@ if(UNIX)
     add_subdirectory(tests)
 endif()
 
-set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/${PROJECT_NAME}-${PROJECT_VERSION}")
+if(INSTALL_AS_STANDALONE)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/${PROJECT_NAME}-${PROJECT_VERSION}")
 
-install(TARGETS Bedrock
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib/static)
-install(DIRECTORY include/ DESTINATION include)
+    install(TARGETS Bedrock
+            RUNTIME DESTINATION bin
+            LIBRARY DESTINATION lib
+            ARCHIVE DESTINATION lib/static)
+    install(DIRECTORY include/ DESTINATION include)
+endif()
