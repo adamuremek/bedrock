@@ -7,9 +7,9 @@ set(CMAKE_CXX_STANDARD 17)
 
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
     set(BUILD_SHARED_LIBS ON)
-    set(INSTALL_AS_STANDALONE TRUE)
+    set(BUILD_AS_STANDALONE TRUE)
 else()
-    set(INSTALL_AS_STANDALONE FALSE)
+    set(BUILD_AS_STANDALONE FALSE)
 endif()
 
 include(CheckFunctionExists)
@@ -108,56 +108,47 @@ set(SOURCE_FILES
         ${SRC_BEDROCK_PREFIX}/layers.cpp
 )
 
-if(INSTALL_AS_STANDALONE)
-    set(BEDROCK_FILES
-            ${INCLUDE_ENET}
-            ${INCLUDE_BEDROCK}
-            ${SOURCE_FILES}
-    )
-    if(WIN32)
-        set(BEDROCK_LIBS winmm ws2_32)
-    else()
-        set(BEDROCK_LIBS)
-    endif()
 
+set(BEDROCK_FILES
+        ${INCLUDE_ENET}
+        ${INCLUDE_BEDROCK}
+        ${SOURCE_FILES}
+)
+if(WIN32)
+    set(BEDROCK_LIBS winmm ws2_32)
 else()
-    set(BEDROCK_FILES
-            ${INCLUDE_ENET}
-            ${INCLUDE_BEDROCK}
-            ${SOURCE_FILES}
-            PARENT_SCOPE
-    )
-
-    if(WIN32)
-        set(BEDROCK_LIBS winmm ws2_32 PARENT_SCOPE)
-    else()
-        set(BEDROCK_LIBS PARENT_SCOPE)
-    endif()
+    set(BEDROCK_LIBS)
 endif()
 
+set(BEDROCK_DEFINITIONS
+        -DENET_DLL=1
+        -DENET_BUILDING_LIB
+        -DBEDROCK_DLL=1
+        -DBEDROCK_BUILDING_LIB
+)
 
-
-
-
-if(WIN32 AND BUILD_SHARED_LIBS AND (MSVC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
-    add_definitions(-DENET_DLL=1)
-    add_definitions(-DENET_BUILDING_LIB)
-
-    add_definitions(-DBEDROCK_DLL=1)
-    add_definitions(-DBEDROCK_BUILDING_LIB)
+if(NOT BUILD_AS_STANDALONE)
+    set(BEDROCK_FILES ${BEDROCK_FILES} PARENT_SCOPE)
+    set(BEDROCK_LIBS ${BEDROCK_LIBS} PARENT_SCOPE)
+    set(BEDROCK_DEFINITIONS ${BEDROCK_DEFINITIONS} PARENT_SCOPE)
 endif()
+
 
 #add_executable(BedrockDebug main.cpp)
 #target_link_libraries(BedrockDebug PRIVATE enet Bedrock)
 #target_include_directories(BedrockDebug PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
-if(INSTALL_AS_STANDALONE)
+if(BUILD_AS_STANDALONE)
     # Only allow tests to compile for unix-like systems such as Linux or MacOS
     # Tests should only be run on POSIX/UNIX systems
     if(UNIX)
         # Import googletest
         add_subdirectory(${PROJECT_SOURCE_DIR}/extern/googletest)
         add_subdirectory(tests)
+    endif()
+
+    if(WIN32 AND BUILD_SHARED_LIBS AND (MSVC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+        add_definitions(${BEDROCK_DEFINITIONS})
     endif()
 
     add_library(Bedrock ${BEDROCK_FILES})
