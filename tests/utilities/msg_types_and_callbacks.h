@@ -106,6 +106,10 @@ public:
         a += c;
         b += c;
     }
+
+    virtual int vfunc1(){
+        return 5;
+    }
 };
 
 class EventTestClass2{
@@ -121,8 +125,11 @@ public:
     }
 };
 
-class EventTestClass3{
-
+class EventTestClass3 : public EventTestClass1{
+public:
+    int vfunc1() override{
+        return 10;
+    }
 };
 
 /*===================================================================*/

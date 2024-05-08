@@ -108,6 +108,22 @@ TEST(EventCallbacks, MemberFunctionPointerWithReturnWithArgs){
 
 }
 
+TEST(EventCallbacks, SingleInheritance){
+    EventTestClass1* c1 = new EventTestClass3;
+    EventTestClass1* c2 = new EventTestClass1;
+    EventTestClass3* c3 = new EventTestClass3;
+
+    Bedrock::EventCallback<int> callback1(c1, &EventTestClass1::vfunc1);
+    Bedrock::EventCallback<int> callback2(c2, &EventTestClass1::vfunc1);
+    Bedrock::EventCallback<int> callback3(c3, &EventTestClass3::vfunc1);
+
+    ASSERT_EQ(callback1(), 10);
+    ASSERT_EQ(callback2(), 5);
+    ASSERT_EQ(callback3(), 10);
+
+    delete c1;
+}
+
 /*========================================================*/
 
 TEST(Events, SubscribeToEventNoArgs){
