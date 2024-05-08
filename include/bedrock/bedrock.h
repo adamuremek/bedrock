@@ -36,12 +36,12 @@ namespace Bedrock{
             return instance;
         }
 
-        inline bool isRole(const Role& roleQuery) const { return roleQuery == role; }
+        [[nodiscard]] inline bool isRole(const Role& roleQuery) const { return roleQuery == role; }
 
         // Getters
-        inline ENetHost* getEnetHost() const {return enetHost; }
-        inline ENetPeer* getEnetPeer() const { return enetPeer; }
-        inline bool getEventLoopActive() const { return eventLoopActive; }
+        [[nodiscard]] inline ENetHost* getEnetHost() const {return enetHost; }
+        [[nodiscard]] inline ENetPeer* getEnetPeer() const { return enetPeer; }
+        [[nodiscard]] inline bool getEventLoopActive() const { return eventLoopActive; }
 
         // Setters
         inline void setEnetHost(ENetHost* host) { enetHost = host; }
@@ -64,20 +64,19 @@ namespace Bedrock{
     extern BEDROCK_API Event<void> onHostDisconnect;
     extern BEDROCK_API bool isInitialized;
 
-    bool BEDROCK_API init();
-    void BEDROCK_API shutdown();
+    StatusCode BEDROCK_API init();
+    StatusCode BEDROCK_API shutdown();
     bool BEDROCK_API isRole(const Role& roleQuery);
 
-    bool BEDROCK_API startDedicatedHost(uint16_t port);
-    bool BEDROCK_API startClient(uint16_t port, const char* hostAddr);
+    StatusCode BEDROCK_API startDedicatedHost(uint16_t port);
+    StatusCode BEDROCK_API startClient(uint16_t port, const char* hostAddr);
 
     void BEDROCK_API clearEventCallbacks();
 
 
-
-    void BEDROCK_API sendMessageToHost(const Message& msg);
-    void BEDROCK_API sendMessageToClient(const Message& msg, ClientID client);
-    void BEDROCK_API sendMessageToLayer(const Message& msg, LayerId layer);
+    StatusCode BEDROCK_API sendMessageToHost(const Message& msg);
+    StatusCode BEDROCK_API sendMessageToClient(const Message& msg, ClientID client);
+    StatusCode BEDROCK_API sendMessageToLayer(const Message& msg, LayerId layer);
 
     template<typename T>
     void sendToHost(T& msgObj){

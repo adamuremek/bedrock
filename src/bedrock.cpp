@@ -79,12 +79,16 @@ BEDROCK_API Bedrock::Event<void> Bedrock::onHostDisconnect;
 BEDROCK_API bool Bedrock::isInitialized = false;
 
 
-bool Bedrock::init() {
+Bedrock::StatusCode Bedrock::init() {
     isInitialized = enet_initialize() == 0;
-    return isInitialized;
+    return isInitialized ? StatusCode::SUCCESS : StatusCode::INITIALIZATION_FAILED;
 }
 
-void Bedrock::shutdown() {
+Bedrock::StatusCode Bedrock::shutdown() {
+    if(!isInitialized){
+        return StatusCode::NOT_INITIALIZED;
+    }
+
     BedrockMetadata& metadata = BedrockMetadata::getInstance();
     
     // Shutdown if currently acting as the server
@@ -105,13 +109,19 @@ void Bedrock::shutdown() {
     clearEventCallbacks();
     metadata.setRole(ACTOR_NONE);
     isInitialized = false;
+
+    return StatusCode::SUCCESS;
 }
 
 bool Bedrock::isRole(const Bedrock::Role &roleQuery) {
     return Bedrock::BedrockMetadata::getInstance().isRole(roleQuery);
 }
 
-bool Bedrock::startDedicatedHost(uint16_t port) {
+Bedrock::StatusCode Bedrock::startDedicatedHost(uint16_t port) {
+    if(!isInitialized){
+        return StatusCode::NOT_INITIALIZED;
+    }
+
     BedrockMetadata& metadata = BedrockMetadata::getInstance();
 
     ENetAddress addr{};
@@ -119,8 +129,7 @@ bool Bedrock::startDedicatedHost(uint16_t port) {
 
     ENetHost* host = enet_host_create(&addr, 32, 2, 0, 0);
     if(host == nullptr){
-        std::cout << "ASS"<< std::endl;
-        return false;
+        return StatusCode::CREATE_HOST_FAILED;
     }else{
         metadata.setEnetHost(host);
     }
@@ -129,10 +138,14 @@ bool Bedrock::startDedicatedHost(uint16_t port) {
     metadata.setEventLoopActive(true);
     metadata.eventLoop = std::thread(Bedrock::pollEvents);
 
-    return true;
+    return StatusCode::SUCCESS;
 }
 
-bool Bedrock::startClient(uint16_t port, const char* hostAddr) {
+Bedrock::StatusCode Bedrock::startClient(uint16_t port, const char* hostAddr) {
+    if(!isInitialized){
+        return StatusCode::NOT_INITIALIZED;
+    }
+
     BedrockMetadata& metadata = BedrockMetadata::getInstance();
 
     ENetHost* host = enet_host_create(nullptr, 1, 2, 0, 0);
@@ -146,8 +159,7 @@ bool Bedrock::startClient(uint16_t port, const char* hostAddr) {
 
     ENetPeer* peer = enet_host_connect(host, &addr, 2, 0);
     if(peer == nullptr){
-        std::cerr << "HAHA GET DUNKED ON YOU STUPID" << std::endl;
-        return false;
+        return StatusCode::CREATE_HOST_FAILED;
     }else{
         metadata.setEnetPeer(peer);
     }
@@ -155,7 +167,7 @@ bool Bedrock::startClient(uint16_t port, const char* hostAddr) {
     metadata.setEventLoopActive(true);
     metadata.eventLoop = std::thread(Bedrock::pollEvents);
 
-    return true;
+    return StatusCode::SUCCESS;
 }
 
 void Bedrock::clearEventCallbacks() {
@@ -166,7 +178,7 @@ void Bedrock::clearEventCallbacks() {
 }
 
 
-void Bedrock::sendMessageToHost(const Bedrock::Message &msg) {
+Bedrock::StatusCode Bedrock::sendMessageToHost(const Bedrock::Message &msg) {
     ENetPacket* packet = enet_packet_create(msg.data,
                                             msg.size,
                                             ENET_PACKET_FLAG_NO_ALLOCATE | ENET_PACKET_FLAG_RELIABLE);
@@ -174,10 +186,12 @@ void Bedrock::sendMessageToHost(const Bedrock::Message &msg) {
     packet->freeCallback = deleteMessageData;
     enet_peer_send(BedrockMetadata::getInstance().getEnetPeer(), 0, packet);
     enet_host_flush(BedrockMetadata::getInstance().getEnetHost());
+
+    return StatusCode::SUCCESS;
 }
 
 
-void Bedrock::sendMessageToClient(const Message& msg, ClientID client){
+Bedrock::StatusCode Bedrock::sendMessageToClient(const Message& msg, ClientID client){
     ENetPacket* packet = enet_packet_create(msg.data,
                                             msg.size,
                                             ENET_PACKET_FLAG_NO_ALLOCATE | ENET_PACKET_FLAG_RELIABLE);
@@ -188,9 +202,11 @@ void Bedrock::sendMessageToClient(const Message& msg, ClientID client){
     ENetPeer* peer = &host->peers[client];
     enet_peer_send(peer, 0, packet);
     enet_host_flush(host);
+
+    return StatusCode::SUCCESS;
 }
 
-void Bedrock::sendMessageToLayer(const Bedrock::Message &msg, Bedrock::LayerId layer) {
+Bedrock::StatusCode Bedrock::sendMessageToLayer(const Bedrock::Message &msg, Bedrock::LayerId layer) {
     ENetPacket* packet = enet_packet_create(msg.data,
                                             msg.size,
                                             ENET_PACKET_FLAG_NO_ALLOCATE | ENET_PACKET_FLAG_RELIABLE);
@@ -205,4 +221,6 @@ void Bedrock::sendMessageToLayer(const Bedrock::Message &msg, Bedrock::LayerId l
     }
 
     enet_host_flush(host);
+
+    return StatusCode::SUCCESS;
 }

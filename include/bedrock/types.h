@@ -16,6 +16,12 @@ namespace Bedrock{
     using ClientID = int;
     using LayerId = uint32_t;
 
+    enum StatusCode{
+        SUCCESS = 0,
+        INITIALIZATION_FAILED,
+        NOT_INITIALIZED,
+        CREATE_HOST_FAILED
+    };
 
     enum Role : unsigned char{
         ACTOR_NONE,
@@ -38,10 +44,9 @@ namespace Bedrock{
         size_t size{0};
 
         struct Registrar{
-            inline static uint32_t curId{0};
             explicit Registrar(uint32_t& id){
-                id = curId;
-                curId++;
+                static uint32_t curId{1};
+                id = curId++;
             }
         };
 
@@ -67,7 +72,7 @@ namespace Bedrock{
 }
 
 #define BedrockMsgDatatype(Name) \
-    struct Name : public Bedrock::BedrockDataType<Name>
+    struct BEDROCK_API Name : public Bedrock::BedrockDataType<Name>
 
 
 #endif //BEDROCK_TYPES_H
