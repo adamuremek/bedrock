@@ -66,8 +66,6 @@ endif()
 
 
 #====================== BUILD ======================#
-include_directories(${PROJECT_SOURCE_DIR}/include)
-
 set(SRC_ENET_PREFIX  ${PROJECT_SOURCE_DIR}/src/enet)
 set(SRC_BEDROCK_PREFIX  ${PROJECT_SOURCE_DIR}/src)
 
@@ -108,10 +106,6 @@ if(NOT BUILD_AS_STANDALONE)
 endif()
 
 
-#add_executable(BedrockDebug main.cpp)
-#target_link_libraries(BedrockDebug PRIVATE enet Bedrock)
-#target_include_directories(BedrockDebug PRIVATE ${PROJECT_SOURCE_DIR}/include)
-
 if(BUILD_AS_STANDALONE)
     # Only allow tests to compile for unix-like systems such as Linux or MacOS
     # Tests should only be run on POSIX/UNIX systems
@@ -124,6 +118,14 @@ if(BUILD_AS_STANDALONE)
     if(WIN32 AND BUILD_SHARED_LIBS AND (MSVC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
         add_definitions(${BEDROCK_DEFINITIONS})
     endif()
+
+    #======TESTING EXE=====#
+    add_executable(BedrockDebug main.cpp)
+    target_link_libraries(BedrockDebug ${BEDROCK_LIBS})
+    target_include_directories(BedrockDebug PRIVATE ${BEDROCK_INCLUDE_DIR})
+    #======================#
+
+    include_directories(${BEDROCK_INCLUDE_DIR})
 
     add_library(Bedrock ${BEDROCK_FILES})
     target_link_libraries(Bedrock ${BEDROCK_LIBS})

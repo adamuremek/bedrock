@@ -21,7 +21,7 @@
 #include <enet/enet.h>
 
 namespace Bedrock{
-    class BEDROCK_API BedrockMetadata{
+    class BedrockMetadata{
     private:
         ENetHost* enetHost = nullptr;
         ENetPeer* enetPeer = nullptr;
@@ -31,7 +31,7 @@ namespace Bedrock{
     public:
         std::thread eventLoop;
 
-        static BedrockMetadata& getInstance(){
+        static BEDROCK_API BedrockMetadata& getInstance(){
             static BedrockMetadata instance;
             return instance;
         }
@@ -58,10 +58,10 @@ namespace Bedrock{
     }
 
     // Visible declarations
-    extern BEDROCK_API Event<const ClientID&> onClientConnect;
-    extern BEDROCK_API Event<const ClientID&> onClientDisconnect;
-    extern BEDROCK_API Event<> onHostConnect;
-    extern BEDROCK_API Event<> onHostDisconnect;
+    extern BEDROCK_API Event<void, const ClientID&> onClientConnect;
+    extern BEDROCK_API Event<void, const ClientID&> onClientDisconnect;
+    extern BEDROCK_API Event<void> onHostConnect;
+    extern BEDROCK_API Event<void> onHostDisconnect;
     extern BEDROCK_API bool isInitialized;
 
     bool BEDROCK_API init();

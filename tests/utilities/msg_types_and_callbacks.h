@@ -40,6 +40,17 @@ BedrockMsgDatatype(TestType3){
     }
 };
 
+class EventTestingClass{
+public:
+    void incrementInt(int& val){
+        val++;
+    }
+
+    void printSmily(){
+        std::cout << ":)" << std::endl;
+    }
+};
+
 void ModifyNum1(Numbers& inNum, Bedrock::Message& outMsg){
     inNum.a = 37;
 
@@ -64,6 +75,57 @@ void HandleTestType3(TestType3& inType, Bedrock::Message& outMsg){
 
     Bedrock::serializeType(inType, outMsg);
 }
+
+/*=====================EVENT TESTING DEFINITIONS=====================*/
+void func1(){
+    std::cout << "Works :)" << std::endl;
+}
+
+int func2(){
+    return 5;
+}
+
+void func3(int& a, int& b){
+    a += 2;
+    b += 4;
+}
+
+int func4(int& a){
+    int oldA = a;
+    a +=5;
+    return oldA;
+}
+
+class EventTestClass1{
+public:
+    void func1(){
+        std::cout << "Hello Test!" << std::endl;
+    }
+
+    void func2(int& a, int& b, int c){
+        a += c;
+        b += c;
+    }
+};
+
+class EventTestClass2{
+public:
+    int func3(){
+        return 10;
+    }
+
+    int func4(int a, int* b){
+        int old = *b;
+        *b += a;
+        return old;
+    }
+};
+
+class EventTestClass3{
+
+};
+
+/*===================================================================*/
 
 
 #endif //TESTS_MSG_TYPES_AND_CALLBACKS_H

@@ -2,138 +2,99 @@
 #define BEDROCK_EVENT_H
 
 #include <functional>
-#include <vector>
+#include <unordered_map>
+#include <stack>
+#include <memory>
 
-namespace Bedrock{
-
-    template<typename... Args>
-    class Event{
+namespace Bedrock {
+    template<typename ReturnType, typename... Args>
+    class EventCallback {
     private:
-        std::unordered_map<uint64_t, std::function<void(Args...)>> callbacks;
+        inline static std::stack<uint32_t> freeUIDs{};
+        std::function<ReturnType(Args...)> callback;
+        uint32_t UID{0};
 
-        static inline uint64_t hash(uint64_t a, uint64_t b){
-            return a ^ (b << 1 | b >> 63);
+        // Generate UID for every EventCallback instance.
+        static uint32_t generateUID() {
+            static uint32_t nextUID{1};
+            if (!freeUIDs.empty()) {
+                uint32_t top = freeUIDs.top();
+                freeUIDs.pop();
+                return top;
+            }
+            return nextUID++;
         }
+
     public:
-        template<typename T>
-        void subscribe(T* obj,void(T::*func)(Args...)){
-            uintptr_t funcPtrVal = 0;
-            auto objPtrVal = reinterpret_cast<uintptr_t >(obj);
-            std::memcpy(&funcPtrVal, &func, sizeof(func));
-            uint64_t hashcode = hash(funcPtrVal, objPtrVal);
+        // Default constructor
+        EventCallback() : UID{generateUID()} {}
 
-            callbacks[hashcode] = [=](Args... args){ (obj->*func)(args...); };
-        }
+        // Explicitly define copy constructor
+        EventCallback(const EventCallback &other) : callback(other.callback), UID{other.getUID()} {};
 
-        void subscribe(void(*func)(Args...)){
-            uintptr_t funcPtrVal = 0;
-            std::memcpy(&funcPtrVal, &func, sizeof(func));
-            uint64_t hashcode = hash(funcPtrVal, funcPtrVal);
-
-            callbacks[hashcode] = [=](Args... args){ func(args...); };
-        }
-
-        template<typename T>
-        void unsubscribe(T* obj,void(T::*func)(Args...)){
-            uintptr_t funcPtrVal = 0;
-            auto objPtrVal = reinterpret_cast<uintptr_t >(obj);
-            std::memcpy(&funcPtrVal, &func, sizeof(func));
-            uint64_t hashcode = hash(funcPtrVal, objPtrVal);
-
-            auto it = callbacks.find(hashcode);
-            if(it != callbacks.end()){
-                callbacks.erase(hashcode);
+        // Explicitly copy assignment operator
+        EventCallback& operator=(const EventCallback& other) {
+            if (this != &other) {
+                callback = other.callback;
+                UID = other.UID;
             }
+            return *this;
         }
 
-        void unsubscribe(void(*func)(Args...)){
-            uintptr_t funcPtrVal = 0;
-            std::memcpy(&funcPtrVal, &func, sizeof(func));
-            uint64_t hashcode = hash(funcPtrVal, funcPtrVal);
+        // Existing move constructor and move assignment
+        EventCallback(EventCallback&& other) noexcept = default;
+        EventCallback& operator=(EventCallback&& other) noexcept = default;
 
-            auto it = callbacks.find(hashcode);
-            if(it != callbacks.end()){
-                callbacks.erase(hashcode);
-            }
+        ~EventCallback() { freeUIDs.push(UID); }
+
+        // Constructor for callable objects, function pointers, and lambdas
+        template<typename Callable,
+                typename = std::enable_if_t<!std::is_same_v<std::decay_t<Callable>, EventCallback>>>
+        explicit EventCallback(Callable &&func) : callback(std::forward<Callable>(func)), UID{generateUID()} {}
+
+        // Constructor for member function pointers
+        template<typename T>
+        EventCallback(T *obj, ReturnType (T::*memFunc)(Args...)) : callback([=](Args... args) -> ReturnType {
+            return (obj->*memFunc)(std::forward<Args>(args)...);
+        }), UID{generateUID()} {}
+
+        // Invoke the stored callback
+        ReturnType operator()(Args... args) const {
+            return callback(std::forward<Args>(args)...);
+        }
+
+        [[nodiscard]] inline uint32_t getUID() const { return UID; }
+    };
+
+
+    template<typename ReturnType, typename... Args>
+    class Event {
+    private:
+        std::unordered_map<uint32_t, EventCallback<ReturnType, Args...>> callbacks;
+    public:
+        // Overload for lvalues: copies the callback
+        void subscribe(const EventCallback<ReturnType, Args...>& callback) {
+            callbacks[callback.getUID()] = callback;
+        }
+
+        // Overload for rvalues: moves the callback
+        void subscribe(EventCallback<ReturnType, Args...>&& callback) {
+            callbacks.emplace(callback.getUID(), std::move(callback));
+        }
+
+        void unsubscribe(const EventCallback<ReturnType, Args...>& callback) {
+            callbacks.erase(callback.getUID());
         }
 
         void invoke(Args... args){
             for(auto& pair : callbacks){
-                pair.second(args...);
+                pair.second(std::forward<Args>(args)...);
             }
         }
 
-        int count(){
-            return callbacks.size();
-        }
+        size_t count() { return callbacks.size(); }
 
-        void clear(){
-            callbacks.clear();
-        }
-    };
-
-    template<>
-    class Event<>{
-    private:
-        std::unordered_map<uint64_t, std::function<void()>> callbacks;
-
-        static inline uint64_t hash(uint64_t a, uint64_t b){
-            return a ^ (b << 1 | b >> 63);
-        }
-    public:
-
-
-        template<typename T>
-        void subscribe(T* obj,void(T::*func)()){
-            uintptr_t funcPtrVal = 0;
-            auto objPtrVal = reinterpret_cast<uintptr_t >(obj);
-            std::memcpy(&funcPtrVal, &func, sizeof(func));
-            uint64_t hashcode = hash(funcPtrVal, objPtrVal);
-
-            callbacks[hashcode] = [=]() -> void { (obj->*func)(); };
-        }
-
-        void subscribe(void(*func)()){
-            uintptr_t funcPtrVal = 0;
-            std::memcpy(&funcPtrVal, &func, sizeof(func));
-            uint64_t hashcode = hash(funcPtrVal, funcPtrVal);
-
-            callbacks[hashcode] = [=]() -> void{ func(); };
-        }
-
-        template<typename T>
-        void unsubscribe(T* obj,void(T::*func)()){
-            uintptr_t funcPtrVal = 0;
-            uintptr_t objPtrVal = reinterpret_cast<uintptr_t >(obj);
-            std::memcpy(&funcPtrVal, &func, sizeof(func));
-            uint64_t hashcode = hash(funcPtrVal, objPtrVal);
-
-            auto it = callbacks.find(hashcode);
-            if(it != callbacks.end()){
-                callbacks.erase(hashcode);
-            }
-        }
-
-        void unsubscribe(void(*func)()){
-            uintptr_t funcPtrVal = 0;
-            std::memcpy(&funcPtrVal, &func, sizeof(func));
-            uint64_t hashcode = hash(funcPtrVal, funcPtrVal);
-
-            auto it = callbacks.find(hashcode);
-            if(it != callbacks.end()){
-                callbacks.erase(hashcode);
-            }
-        }
-
-        void invoke(){
-            for(auto& pair : callbacks){
-                pair.second();
-            }
-        }
-
-        void clear(){
-            callbacks.clear();
-        }
+        void clear() { callbacks.clear(); }
     };
 }
 
