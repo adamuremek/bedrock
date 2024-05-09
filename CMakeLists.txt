@@ -87,12 +87,16 @@ set(SOURCE_FILES
 set(BEDROCK_FILES ${SOURCE_FILES})
 set(BEDROCK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(BEDROCK_LIBS)
-set(BEDROCK_DEFINITIONS
-        #-DENET_DLL=1
-        -DENET_BUILDING_LIB
-        -DBEDROCK_DLL=1
-        -DBEDROCK_BUILDING_LIB)
+set(BEDROCK_DEFINITIONS)
 
+
+if(WIN32 AND BUILD_SHARED_LIBS AND (MSVC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+    set(BEDROCK_DEFINITIONS
+            ${BEDROCK_DEFINITIONS}
+            -DENET_DLL=1
+            -DENET_BUILDING_LIB
+            -DBEDROCK_DLL=1)
+endif()
 
 if(WIN32)
     set(BEDROCK_LIBS winmm ws2_32)
@@ -115,9 +119,7 @@ if(BUILD_AS_STANDALONE)
         add_subdirectory(tests)
     endif()
 
-    if(WIN32 AND BUILD_SHARED_LIBS AND (MSVC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
-        add_definitions(${BEDROCK_DEFINITIONS})
-    endif()
+    add_definitions(${BEDROCK_DEFINITIONS})
 
     #======TESTING EXE=====#
     add_executable(BedrockDebug main.cpp)
