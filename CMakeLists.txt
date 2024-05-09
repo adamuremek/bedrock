@@ -107,9 +107,9 @@ endif()
 
 
 if(BUILD_AS_STANDALONE)
-    # Only allow tests to compile for unix-like systems such as Linux or MacOS
+    # Only allow tests to compile for unix-like systems except for MacOS
     # Tests should only be run on POSIX/UNIX systems
-    if(UNIX)
+    if(UNIX AND NOT APPLE)
         # Import googletest
         add_subdirectory(${PROJECT_SOURCE_DIR}/extern/googletest)
         add_subdirectory(tests)

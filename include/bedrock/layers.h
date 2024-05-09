@@ -7,8 +7,8 @@
 namespace Bedrock{
     class LayerManager{
     private:
-        std::map<LayerId, std::set<ClientID>> layerMap;
-        std::map<ClientID, LayerId> idToLayerMap;
+        std::map<LayerId, std::set<ClientID>> layerMap; //TODO
+        std::map<ClientID, LayerId> idToLayerMap; //TODO
     public:
         static LayerManager& getInstance(){
             static LayerManager instance;

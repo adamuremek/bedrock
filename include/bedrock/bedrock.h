@@ -29,7 +29,7 @@ namespace Bedrock{
 
         Role role = ACTOR_NONE;
     public:
-        std::thread eventLoop;
+        std::thread eventLoop; //TODO
 
         static BEDROCK_API BedrockMetadata& getInstance(){
             static BedrockMetadata instance;
