@@ -1,4 +1,4 @@
 /unix-build
 /windows-build
-/cmake-build-debug
+/cmake-build-*
 /.idea

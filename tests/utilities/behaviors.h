@@ -136,7 +136,7 @@ void clientConnectNormalDisconnect(){
  * Number of Tests: 0
  */
 void clientConnectAbruptDisconnect(){
-    // Uses topology 2
+    cout << "WAGA" << endl;
     Bedrock::init();
 
     Bedrock::startClient(8000, "10.0.0.1");

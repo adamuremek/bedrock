@@ -105,8 +105,17 @@ TEST(EventCallbacks, MemberFunctionPointerNoReturnWithArgs){
 }
 
 TEST(EventCallbacks, MemberFunctionPointerWithReturnWithArgs){
+    EventTestClass2 cls;
 
+    Bedrock::EventCallback<int, int, int*> callback(&cls, &EventTestClass2::func4);
+    int counterA = 5;
+    int res = callback(3, &counterA);
+
+    ASSERT_EQ(res, 5);
+    ASSERT_EQ(counterA, 8);
 }
+
+/*========================================================*/
 
 TEST(EventCallbacks, SingleInheritance){
     EventTestClass1* c1 = new EventTestClass3;
@@ -126,7 +135,25 @@ TEST(EventCallbacks, SingleInheritance){
 
 /*========================================================*/
 
-TEST(Events, SubscribeToEventNoArgs){
+TEST(Events, SubscribeToEventNoReturnNoArgs){
+    Bedrock::EventCallback<void> callback([]()->void{
+        std::cout << "Hello Events!" << std::endl;
+    });
+
+
+    Bedrock::Event<void> e;
+    e.subscribe(callback);
+    e.subscribe(Bedrock::EventCallback<void>([]()->void{
+        std::cout << "Hello Again!" << std::endl;
+    }));
+
+    e.invoke();
+    ASSERT_EQ(e.count(), 2);
+    e.clear();
+    ASSERT_EQ(e.count(), 0);
+}
+
+TEST(Events, UnsubscribeFromEventNoReturnNoArgs){
     Bedrock::EventCallback<void> callback([]()->void{
         std::cout << "Hello Events!" << std::endl;
     });
@@ -139,27 +166,49 @@ TEST(Events, SubscribeToEventNoArgs){
     }));
 
 
+    e.invoke();
+    ASSERT_EQ(e.count(), 2);
+    e.unsubscribe(callback);
+    ASSERT_EQ(e.count(), 1);
     e.invoke();
 }
 
-TEST(Events, UnsubscribeFromEventNoArgs){
-    Bedrock::EventCallback<void> callback([]()->void{
-        std::cout << "Hello Events!" << std::endl;
+TEST(Events, SubscribeToEventWithReturnNoArgs){
+    Bedrock::EventCallback<int> callback1([]()->int{
+       return 2;
     });
 
+    Bedrock::EventCallback<int> callback2([]()->int{
+        return 4;
+    });
 
-    Bedrock::Event<void> e;
-    e.subscribe(callback);
-    e.subscribe(Bedrock::EventCallback<void>([]()->void{
-        std::cout << "Hello Again!" << std::endl;
-    }));
+    Bedrock::Event<int> e;
+    e.subscribe(callback1);
+    e.subscribe(callback2);
 
-
+    ASSERT_EQ(e.count(), 2);
     e.invoke();
+    e.clear();
+    ASSERT_EQ(e.count(), 0);
+}
 
-    e.unsubscribe(callback);
+TEST(Events, UnsubscribeToEventWithReturnNoArgs){
+    Bedrock::EventCallback<int> callback1([]()->int{
+        return 2;
+    });
 
+    Bedrock::EventCallback<int> callback2([]()->int{
+        return 4;
+    });
+
+    Bedrock::Event<int> e;
+    e.subscribe(callback1);
+    e.subscribe(callback2);
+
+    ASSERT_EQ(e.count(), 2);
     e.invoke();
+    e.unsubscribe(callback2);
+    ASSERT_EQ(e.count(), 1);
 }
 
 TEST(Events, ahh){
