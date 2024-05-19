@@ -132,6 +132,16 @@ public:
     }
 };
 
+class EventTestClass4{
+private:
+    std::unordered_map<int, int*> test;
+
+public:
+    void testMap(const int& intKey){
+        std::cout << test.size() << std::endl;
+    }
+};
+
 /*===================================================================*/
 
 

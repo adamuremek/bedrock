@@ -2,13 +2,17 @@
 #define BEDROCK_BEDROCK_H
 
 #ifdef _WIN32
-#ifdef BEDROCK_DLL
-        #define BEDROCK_API __declspec(dllexport)
+    #ifdef BUILD_SHARED_LIB
+        #ifdef BEDROCK_DLL
+            #define BEDROCK_API __declspec(dllexport)
+        #else
+            #define BEDROCK_API __declspec(dllimport)
+        #endif // endif BEDROCK_DLL
     #else
-        #define BEDROCK_API __declspec(dllimport)
-    #endif // endif BEDROCK_DLL
+        #define BEDROCK_API
+    #endif
 #else
-#define BEDROCK_API
+    #define BEDROCK_API
 #endif
 
 #include <thread>

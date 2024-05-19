@@ -162,5 +162,16 @@ TEST(Events, UnsubscribeFromEventNoArgs){
     e.invoke();
 }
 
+TEST(Events, ahh){
+    EventTestClass4* t = new EventTestClass4;
+
+    Bedrock::EventCallback<void, const int&> callback(t, &EventTestClass4::testMap);
+
+    Bedrock::Event<void, const int&> e;
+
+    e.subscribe(callback);
+    e.invoke(4);
+}
+
 
 #endif //TESTS_EVENTS_H
