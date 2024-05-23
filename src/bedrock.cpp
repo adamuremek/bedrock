@@ -11,7 +11,7 @@ namespace Bedrock{
             BedrockMetadata& metadata = BedrockMetadata::getInstance();
 
             while (metadata.getEventLoopActive()) {
-                enet_host_service(metadata.getEnetHost(), &event, 0);
+                enet_host_service(metadata.getEnetHost(), &event, 10);
 
                 switch (event.type) {
                     case ENET_EVENT_TYPE_NONE:{
